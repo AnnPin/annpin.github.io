@@ -1,0 +1,46 @@
+/* selection area style */
+::selection {
+    color: white;
+    background: #009e8f;
+}
+
+/* article font style */
+.post, .posts {
+    font-family: 'Georgia', 'Times New Roman', 'FreeSerif', serif;
+}
+
+/* code font style */
+code, kbd, pre, samp {
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 1em;
+}
+
+/* highlight.js background */
+.post .hljs {
+    background-color: #2b2b2b;
+    border-radius: 5px;
+    padding: 15px 50px;
+}
+
+/* article */
+.post-content {
+    line-height: 1.75;
+    /* tail space */
+    padding-bottom: 5em;
+}
+
+/* article h1 */
+.post-content h1 {
+    padding-top: 1.25em;
+    border-bottom: dotted 2px;
+}
+
+/* article h2 */
+.post-content h2 {
+    padding-top: 0.5em;
+    border-bottom: dotted 1px;
+}
+
+/* article h3 */
+.post-content h3 {
+}
