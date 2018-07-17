@@ -638,7 +638,7 @@ Darcula color scheme from the JetBrains family of IDEs
 <hr />
 
 <p>ちなみに、<code>layout</code> には C のソースコードレベルでの表示機能以外に、アセンブリ命令レベルでの表示を行う
-<code>layout asm</code> が存在する.</p>
+<code>layout asm</code> も存在する.</p>
 
 <pre><code>(gdb) layout asm
 </code></pre>
@@ -647,7 +647,7 @@ Darcula color scheme from the JetBrains family of IDEs
 
 <p><img src="/images/posts/18/07/16/gdb-layout-asm.png" alt="gdb layout asm" /></p>
 
-<p>Intel syntax ではなく AT&amp;T syntax なので (GNU 系列なので当然 <code>as</code> で採用している記法が使われる)
+<p>Intel syntax ではなく AT&amp;T syntax なので (GNU 系列なので当然 <code>nasm</code> ではなく <code>as</code> で採用している記法が使われる)
 <code>mov</code> による代入の方向は 2nd arg -&gt; 1st arg ではなく、1st arg -&gt; 2nd arg の方向となるので注意.
 また、数値リテラルには <code>$</code>、レジスタ名には <code>%</code> が接頭辞として与えられるようである.
 すなわち、<code>mov $0x0, %eax</code> はレジスタ EAX に対して数値 0 を代入するという命令である.</p>
@@ -660,7 +660,9 @@ Darcula color scheme from the JetBrains family of IDEs
 <pre><code>(gdb) nexti
 </code></pre>
 
-<p>これらの違いは <code>next</code> と <code>step</code> の違いと同様である.</p>
+<p>これらの違いは <code>step</code> と <code>next</code> の違いと同様である.</p>
+
+<p>さらに、<code>layout regs</code> という現在のレジスタの状態を列挙してくれる機能もある. 超便利.</p>
 
 <p>なお、<code>layout src</code> や <code>layout asm</code> を使っている状態でプログラムの標準出力によって画面が崩れてしまった場合には、<code>Ctrl + l</code> で表示を直すことができるようになっている.</p>
 
@@ -760,6 +762,16 @@ Darcula color scheme from the JetBrains family of IDEs
 (gdb) x/16x $esp
 </code></pre>
 
+<h1 id="コアダンプを解析する">コアダンプを解析する</h1>
+
+<p>コアダンプを <code>gdb</code> で解析することでプログラムの停止箇所を判定することができる.</p>
+
+<pre><code class="language-bash">$ gdb -q binary_file core_dump_file
+</code></pre>
+
+<p>この状態で <code>where</code> を実行すれば停止した箇所のスタックトレースが確認できるほか、<code>layout asm</code>
+を実行することで実行停止した命令を確認することができる.</p>
+
 <h1 id="gdbserver-でデバッガ操作とプログラムの出力を分ける">gdbserver でデバッガ操作とプログラムの出力を分ける</h1>
 
 <p><code>gdbserver</code> というツールを使うことで、<code>gdb</code> でのデバッガの操作とデバッグ対象のプログラムの標準出力の
@@ -789,12 +801,46 @@ Darcula color scheme from the JetBrains family of IDEs
 <code>gdb</code> によるデバッガ操作とデバッグ対象のプログラムの出力を分離させることができる.
 結構便利かもしれない.</p>
 
+<ul>
+<li><code>gdb</code> 側の画面出力</li>
+</ul>
+
+<pre><code>[user@localhost hello]$ gdb -q hello
+Reading symbols from /home/user/hello/hello...done.
+(gdb) target extended-remote localhost:9000
+Remote debugging using localhost:9000
+0x080481c0 in _start ()
+Created trace state variable $trace_timestamp for target's variable 1.
+(gdb) run
+The program being debugged has been started already.
+Start it from the beginning? (y or n) y
+Starting program: /home/user/hello/hello
+
+Program exited normally.
+(gdb)
+</code></pre>
+
+<ul>
+<li><code>gdbserver</code> 側の画面出力</li>
+</ul>
+
+<pre><code>[user@localhost hello]# gdbserver localhost:9000 ./hello
+Process ./hello created; pid = 4283
+Listening on port 9000
+Remote debugging from host 127.0.0.1
+Process ./hello created; pid = 4290
+Hello World! 1 ./hello
+
+Child exited with status 0
+</code></pre>
+
 <p>なお、<code>gdb</code> および <code>gdbserver</code> を終了させる場合には、<code>gdb</code> を終了させる前に <code>monitor exit</code> コマンドを入力する必要がある.</p>
 
 <pre><code>(gdb) monitor exit
 </code></pre>
 
-<p>これを忘れてしまうと、<code>gdbserver</code> がいつまで経っても終了せずに困ることになる.</p>
+<p>これを忘れてしまうと、<code>gdbserver</code> がいつまで経っても終了せずに困ることになる.
+(最初は気づかずに <code>ps ax | grep gdbserver</code> して PID を調べて <code>kill</code> してしまった&hellip;)</p>
 
 <p>もしも <code>gdb</code> を先に <code>quit</code> してしまった場合には、再度 <code>gdb</code> を起動して <code>target extended-remote</code> で <code>gdbserver</code> に接続してから <code>monitor exit</code> をすればよい.</p>
 

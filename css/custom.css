@@ -13,6 +13,7 @@
 code, kbd, pre, samp {
     font-family: Consolas, 'Courier New', monospace;
     font-size: 1em;
+    line-height: 1.25;
 }
 
 /* highlight.js background */
@@ -44,3 +45,24 @@ code, kbd, pre, samp {
 /* article h3 */
 .post-content h3 {
 }
+
+/* article table */
+.post-content table {
+    min-width: 400px;
+    text-align: center;
+}
+
+.post-content thead tr {
+    border-bottom: black 1px solid;
+}
+
+.post-content thead tr th,
+.post-content tbody tr td {
+    border-right: black 1px solid;
+}
+
+.post-content thead tr th:last-child,
+.post-content tbody tr td:last-child {
+    border-right: none;
+}
+

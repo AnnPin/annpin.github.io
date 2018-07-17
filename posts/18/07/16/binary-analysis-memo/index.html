@@ -3,8 +3,8 @@
 <head>
   
   <meta charset="utf-8">
-  <title>Posts</title>
-  <meta name="description" content="Posts">
+  <title>バイナリ解析についてのメモ</title>
+  <meta name="description" content="バイナリ解析についてのメモ">
   <meta name="author" content="AnnPin">
   
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -414,8 +414,6 @@ Darcula color scheme from the JetBrains family of IDEs
 
   
   
-  <link href="https://annpin.github.io/posts/index.xml" rel="alternate" type="application/rss+xml" title="あんぜんぴんの落書き帳 Feed" />
-  
 
   <meta name="generator" content="Hugo 0.37" />
 
@@ -458,121 +456,254 @@ Darcula color scheme from the JetBrains family of IDEs
 </div>
 
 
-
 <div class="pure-g">
   <div class="pure-u-1-24 pure-u-md-1-6"></div>
   <div class="pure-u-11-12 pure-u-md-2-3">
-    <div class="post-content">
-      <p class="posts-name">Posts:</p>
+    <div class="post">
 
-      <ul class="posts">
+      <div class="post-title">
+        <p class="footnote">
+        <time class="">07-16-2018</time>
         
         
         
-        <li>
-          
-          <a class="post-list" href="https://annpin.github.io/posts/18/07/17/linux-kernel-code-reading/">Linux カーネル v2.6.39 と v4.18-rc5 のコードをチョット比べてみる</a>
 
-          <p class="footnote">
-          <time datetime="07-17-2018">
-            07-17-2018
-          </time>
-          </p>
-        </li>
         
-        
-        
-        <li>
-          
-          <a class="post-list" href="https://annpin.github.io/posts/18/07/16/binary-analysis-memo/">バイナリ解析についてのメモ</a>
 
-          <p class="footnote">
-          <time datetime="07-16-2018">
-            07-16-2018
-          </time>
-          </p>
-        </li>
         
-        
-        
-        <li>
-          
-          <a class="post-list" href="https://annpin.github.io/posts/18/07/16/gdb-commands/">gdb のコマンドメモ</a>
+        </p>
+        <h1>バイナリ解析についてのメモ</h1>
+      </div>
 
-          <p class="footnote">
-          <time datetime="07-16-2018">
-            07-16-2018
-          </time>
-          </p>
-        </li>
+      <div class="post-content">
         
-        
-        
-        <li>
-          
-          <a class="post-list" href="https://annpin.github.io/posts/18/03/27/c-cpp-const/">C/C&#43;&#43; の const 修飾子の位置で混乱しないために</a>
 
-          <p class="footnote">
-          <time datetime="03-27-2018">
-            03-27-2018
-          </time>
-          </p>
-        </li>
-        
-        
-        
-        <li>
-          
-          <a class="post-list" href="https://annpin.github.io/posts/18/03/07/cross-compiler/">macOS Sierra で非 LLVM な gcc をビルドし、他のプロセッサ向けのクロスコンパイラ gcc をビルドする</a>
+<p>バイナリ解析ツールの使い方とか雑多なことについての個人的なメモ.</p>
 
-          <p class="footnote">
-          <time datetime="03-07-2018">
-            03-07-2018
-          </time>
-          </p>
-        </li>
-        
-        
-        
-        <li>
-          
-          <a class="post-list" href="https://annpin.github.io/posts/18/03/07/x86-emulator-book-on-macos/">macOS Sierra 環境で 自作エミュレータで学ぶ x86 アーキテクチャを読み進めるための環境構築をしたかった</a>
+<p>不定期更新.</p>
 
-          <p class="footnote">
-          <time datetime="03-07-2018">
-            03-07-2018
-          </time>
-          </p>
-        </li>
-        
-        
-        
-        <li>
-          
-          <a class="post-list" href="https://annpin.github.io/posts/18/03/06/hello-low-layer-programming/">低レイヤーのはじめの一歩</a>
+<h1 id="ツールについて">ツールについて</h1>
 
-          <p class="footnote">
-          <time datetime="03-06-2018">
-            03-06-2018
-          </time>
-          </p>
-        </li>
-        
-        
-        
-        <li>
-          
-          <a class="post-list" href="https://annpin.github.io/posts/18/03/06/hello/">ブログを始めてみる (N 回目)</a>
+<h2 id="objdump">objdump</h2>
 
-          <p class="footnote">
-          <time datetime="03-06-2018">
-            03-06-2018
-          </time>
-          </p>
-        </li>
-        
-        
-      </ul>
+<p>実行ファイルの逆アセンブルができる.
+コンパイル後に各関数がどんな機械語に落ちているのかを調べるのに便利.</p>
+
+<pre><code class="language-bash"># アセンブリのみの出力を得る.
+$ objdump -d binary_file
+
+# 元の C 言語ソース付きの出力を得る.
+$ objdump -S binary_file
+
+# デフォルトの AT&amp;T シンタックスではなく、(nasm などの) Intel シンタックスを使用して表示する.
+$ objdump -d -M intel binary_file
+</code></pre>
+
+<p>なお、バイナリファイルのフォーマットを <code>objdump</code> が自動判定できない場合には <code>--target</code>
+オプションを与えることでファイルの読み込みフォーマットを手動で設定することができる.
+(<code>--target=coff-i386</code> など.)</p>
+
+<h2 id="readelf">readelf</h2>
+
+<p><code>readelf</code> コマンドは ELF 形式の実行ファイルの解析ができる.
+関数のシンボルテーブル情報が含まれているため、各関数がどのアドレスに割り当てられているのか確認できる.
+複数の関数が同じアドレスに割り当てられているかを調べることで関数同士が互いにエイリアスになっているかを調べられる.</p>
+
+<pre><code class="language-bash">$ readelf -a binary_file
+</code></pre>
+
+<h2 id="strace">strace</h2>
+
+<p>特定の実行ファイルが呼び出しているシステムコールの一覧を調べられる.</p>
+
+<pre><code class="language-bash">$ strace binary_file
+</code></pre>
+
+<h2 id="hexedit">hexedit</h2>
+
+<p>コマンドライン上で動くバイナリエディタ.</p>
+
+<pre><code class="language-bash">$ hexedit binary_file
+</code></pre>
+
+<p>カーソルの移動は <code>Ctrl + f/b/n/p</code>. Emacs と同じ.
+<code>Tab</code> キーを押すことでカーソル位置を Hex 文字列 - ASCII 文字列間で切り替えることができる.
+<code>/</code> キーで検索も可能. カーソル位置が Hex 文字列と ASCII 文字列のどちらにあるかによって検索対象が異なるので注意.
+保存は <code>Ctrl + x</code>. 終了は <code>Ctrl + c</code>.</p>
+
+<h2 id="ndisasm">ndisasm</h2>
+
+<p>逆アセンブラ.</p>
+
+<pre><code class="language-bash"># 32 ビットモードのバイナリファイルを逆アセンブルする.
+$ ndisasm -b 32 binary_file
+
+# 先頭から特定のバイト数分を無視して逆アセンブルする. (この場合は先頭 0x24 バイトを無視.)
+$ ndisasm -b 32 -e 0x24 binary_file
+
+</code></pre>
+
+<h1 id="システムコールについて">システムコールについて</h1>
+
+<h2 id="ptrace">ptrace</h2>
+
+<p>デバッガなどが使うシステムコール. <code>gdb</code> や <code>gdbserver</code> なども使用している.
+デバッグ対象プログラムが動いているプロセスのメモリやレジスタの状態を確認したり、その中身を書き換える独自トレーサを作成できる.
+<code>fork()</code> によって独自トレーサプロセスが親プロセスとなり、デバッグ対象プログラムが子プロセスとなる場合に、子プロセス側が <code>execve()</code> の実行前に <code>PTRACE_TRACEME</code> というリクエストを発行しておくと親プロセス側で子プロセスの動作を制御できるようになる.
+これによって親プロセス側で子プロセスのレジスタ状態を確認 (<code>PTRACE_GETREGS</code>) したり、子プロセスのステップ実行 (<code>PTRACE_SINGLESTEP</code>) などができる.</p>
+
+<h1 id="その他">その他</h1>
+
+<h2 id="x86-スタックフレーム">x86 スタックフレーム</h2>
+
+<p><a href="https://www.amazon.co.jp/dp/4798044784">ハロー“Hello,World&rdquo;OSと標準ライブラリのシゴトとしくみ</a> で扱う C 言語の Hello World を実行する際のスタックフレームメモ.</p>
+
+<ul>
+<li><code>hello.c</code></li>
+</ul>
+
+<pre><code class="language-c">#include &lt;stdio.h&gt;
+
+int main(int argc, char *argv[]) {
+    printf(&quot;Hello World! %d %s\n&quot;, argc, argv[0]);
+    return 0;
+}
+</code></pre>
+
+<ul>
+<li><code>$ objdump -d hello</code></li>
+</ul>
+
+<pre><code>080482bc &lt;main&gt;:
+ 80482bc:       55                      push   %ebp
+ 80482bd:       89 e5                   mov    %esp,%ebp
+ 80482bf:       83 e4 f0                and    $0xfffffff0,%esp
+ 80482c2:       83 ec 10                sub    $0x10,%esp
+ 80482c5:       8b 45 0c                mov    0xc(%ebp),%eax
+ 80482c8:       8b 10                   mov    (%eax),%edx
+ 80482ca:       b8 0c 36 0b 08          mov    $0x80b360c,%eax
+ 80482cf:       89 54 24 08             mov    %edx,0x8(%esp)
+ 80482d3:       8b 55 08                mov    0x8(%ebp),%edx
+ 80482d6:       89 54 24 04             mov    %edx,0x4(%esp)
+ 80482da:       89 04 24                mov    %eax,(%esp)
+ 80482dd:       e8 7e 10 00 00          call   8049360 &lt;_IO_printf&gt;
+ 80482e2:       b8 00 00 00 00          mov    $0x0,%eax
+ 80482e7:       c9                      leave
+ 80482e8:       c3                      ret
+ 80482e9:       90                      nop
+ 80482ea:       90                      nop
+ 80482eb:       90                      nop
+ 80482ec:       90                      nop
+ 80482ed:       90                      nop
+ 80482ee:       90                      nop
+ 80482ef:       90                      nop
+</code></pre>
+
+<pre><code>low  ^  0. start             1. push              2./3. mov/and
+addr.|  +-----------+        +-----------+        +-----------+
+     |  |           |        |           |        |           |
+     |  |           |        |           |        |           |
+     |  |           |        |           |        |           |
+     |  |           |        |           |        |           |
+     |  |           |        |           |        |           |
+     |  |           |        |           |        |           |
+     |  |           |        |           |        |           | &lt;-esp (16 byte aligned)
+     |  |           |        |           |        |           |
+     |  |           |        | old ebp   | &lt;-esp  | old ebp   | &lt;-ebp
+     |  |-Ret.addr--| &lt;-esp  |-Ret.addr--|        |-Ret.addr--|
+high |  | argc      |        | argc      |        | argc      |
+addr.|  | argv addr |        | argv addr |        | argv addr |
+
+
+low  ^  4. sub               12. call (直後に Ret.addr が push される)
+addr.|  +-----------+        +--------------+
+     |  |           |        |              |
+     |  |           |        |              |
+     |  |           | &lt;-esp  | 0x80b360c    | &lt;-esp (esp+0x0 〜 esp+0x3)
+     |  |           |        | argc         | esp+0x4 〜 esp+0x7
+     |  |           |        | argv[0] addr | esp+0x8 〜 esp+0xb
+     |  |           |        |              |
+     |  |           |        |              |
+     |  |           |        |              |
+     |  | old ebp   | &lt;-ebp  | old ebp      | &lt;-ebp (ebp+0x0 〜 ebp+0x3)
+     |  |-Ret.addr--|        |-Ret.addr-----| ebp+0x4 〜 ebp+0x7
+high |  | argc      |        | argc         | ebp+0x8 〜 ebp+0xb
+addr.|  | argv addr |        | argv addr    | ebp+0xc 〜 ebp+0xf
+
+
+low  ^  printf にジャンプした直後
+addr.|  +--------------+
+     |  |              |
+     |  |-Ret.addr-----| &lt;-esp
+     |  | 0x80b360c    |
+     |  | argc         |
+     |  | argv[0] addr |
+     |  |              |
+     |  |              |
+     |  |              |
+     |  | old ebp      | &lt;-ebp
+     |  |-Ret.addr-----|
+high |  | argc         |
+addr.|  | argv addr    |
+
+
+</code></pre>
+
+<p>leave の処理は <code>mov %ebp,%esp</code> の後に <code>pop %ebp</code> をして状態を 0. start と同じ状態に戻すこと.
+直後の ret によってスタック先頭の Ret.addr が pop されてプログラムカウンタにセットされジャンプ.</p>
+
+<h2 id="x86-64-での関数呼び出し">x86-64 での関数呼び出し</h2>
+
+<p>x86 とは異なり、関数呼び出しの際の引数は 6 つ目まではレジスタ経由、7 つ目以降はスタック経由で渡される.</p>
+
+<table>
+<thead>
+<tr>
+<th>引数</th>
+<th>レジスタ</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>1st arg</td>
+<td><code>rdi</code></td>
+</tr>
+
+<tr>
+<td>2nd arg</td>
+<td><code>rsi</code></td>
+</tr>
+
+<tr>
+<td>3rd arg</td>
+<td><code>rdx</code></td>
+</tr>
+
+<tr>
+<td>4th arg</td>
+<td><code>rcx</code></td>
+</tr>
+
+<tr>
+<td>5th arg</td>
+<td><code>r8</code></td>
+</tr>
+
+<tr>
+<td>6th arg</td>
+<td><code>r9</code></td>
+</tr>
+</tbody>
+</table>
+
+<p>なお 7 つ目以降の引数をスタック経由で渡す際は、<code>call</code> の前にスタックポインタが 16 バイト境界にアライメントされていることが ABI で要求されているので注意.</p>
+
+<p>これを守っていないと関数呼び出しの直後にバスエラーでプログラムが死ぬ.</p>
+
+<p>なお、関数からの戻り値は相変わらず <code>rax</code> で返される.</p>
+
+      </div>
     </div>
   </div>
   <div class="pure-u-1-24 pure-u-md-1-6"></div>
@@ -606,7 +737,7 @@ Darcula color scheme from the JetBrains family of IDEs
 
         </ul>
         <a href="#" class="pure-menu-link pull-right" id="gototop-btn">↑↑</a>
-        <a href="https://annpin.github.io/posts/index.xml" class="pure-menu-link pull-right">RSS</a>
+        <a href="" class="pure-menu-link pull-right">RSS</a>
       </div>
       
       <p id="foot-copyright">© 2018. All rights reserved.</p>

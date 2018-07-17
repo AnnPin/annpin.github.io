@@ -7,10 +7,41 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>ja</language>
     <copyright>© 2018. All rights reserved.</copyright>
-    <lastBuildDate>Mon, 16 Jul 2018 07:47:21 +0900</lastBuildDate>
+    <lastBuildDate>Tue, 17 Jul 2018 19:12:33 +0900</lastBuildDate>
     
 	<atom:link href="https://annpin.github.io/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Linux カーネル v2.6.39 と v4.18-rc5 のコードをチョット比べてみる</title>
+      <link>https://annpin.github.io/posts/18/07/17/linux-kernel-code-reading/</link>
+      <pubDate>Tue, 17 Jul 2018 19:12:33 +0900</pubDate>
+      
+      <guid>https://annpin.github.io/posts/18/07/17/linux-kernel-code-reading/</guid>
+      <description>2.6 系の Linux カーネルのコードを解説してくれている本を読んでみたら、 最新の Linux カーネルの実装がどの程度変化しているのかちょっと調べてみたくなってしまった.
+なので今回は int $0x80 や sysenter が呼ばれた際のシステムコールハンドラの動きをちょっとだけ比べてみた.
+ちょっと見比べてみたときのメモの単なる垂れ流し. オチなし.
+x86/x64 でのシステムコール呼び出し - int $0x80 と sysenter って何が違うのよ x86 の Linux では古くは int $0x80 / iret によるソフトウェア割り込みでシステムコール呼び出しを行っていたらしいが、呼び出しのオーバーヘッドが大きいことから近年の実装では x86 では sysenter/sysexit、x64 では syscall/sysret が使われているらしい.
+sysenter や syscall は近年の x86 や x64 CPU で追加された命令らしい. こっちのほうが int $0x80 よりも高速に動くから、こっちを使うことにしましたって感じですかね.
+v2.6.39 Linux カーネル 2.6.39 では arch/x86/kernel/entry_32.S#498 および arch/x86/kernel/entry_64.S#455 にて ENTRY(system_call) によって system_call というラベルが定義されている.
+ arch/x86/kernel/entry_32.S#498 arch/x86/kernel/entry_64.S#455  加えて、arch/x86/kernel/traps.c#871 には system_call ラベルを割り込みハンドラに登録しているようなので、system_call ラベルがシステムコール実行の窓口になっている模様.</description>
+    </item>
+    
+    <item>
+      <title>バイナリ解析についてのメモ</title>
+      <link>https://annpin.github.io/posts/18/07/16/binary-analysis-memo/</link>
+      <pubDate>Mon, 16 Jul 2018 12:30:10 +0900</pubDate>
+      
+      <guid>https://annpin.github.io/posts/18/07/16/binary-analysis-memo/</guid>
+      <description>バイナリ解析ツールの使い方とか雑多なことについての個人的なメモ.
+不定期更新.
+ツールについて objdump 実行ファイルの逆アセンブルができる. コンパイル後に各関数がどんな機械語に落ちているのかを調べるのに便利.
+# アセンブリのみの出力を得る. $ objdump -d binary_file # 元の C 言語ソース付きの出力を得る. $ objdump -S binary_file # デフォルトの AT&amp;amp;T シンタックスではなく、(nasm などの) Intel シンタックスを使用して表示する. $ objdump -d -M intel binary_file  なお、バイナリファイルのフォーマットを objdump が自動判定できない場合には --target オプションを与えることでファイルの読み込みフォーマットを手動で設定することができる. (--target=coff-i386 など.)
+readelf readelf コマンドは ELF 形式の実行ファイルの解析ができる. 関数のシンボルテーブル情報が含まれているため、各関数がどのアドレスに割り当てられているのか確認できる. 複数の関数が同じアドレスに割り当てられているかを調べることで関数同士が互いにエイリアスになっているかを調べられる.
+$ readelf -a binary_file  strace 特定の実行ファイルが呼び出しているシステムコールの一覧を調べられる.
+$ strace binary_file  hexedit コマンドライン上で動くバイナリエディタ.
+$ hexedit binary_file  カーソルの移動は Ctrl + f/b/n/p. Emacs と同じ.</description>
+    </item>
     
     <item>
       <title>gdb のコマンドメモ</title>

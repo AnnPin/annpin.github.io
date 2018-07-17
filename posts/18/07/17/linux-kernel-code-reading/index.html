@@ -3,8 +3,8 @@
 <head>
   
   <meta charset="utf-8">
-  <title>Posts</title>
-  <meta name="description" content="Posts">
+  <title>Linux カーネル v2.6.39 と v4.18-rc5 のコードをチョット比べてみる</title>
+  <meta name="description" content="Linux カーネル v2.6.39 と v4.18-rc5 のコードをチョット比べてみる">
   <meta name="author" content="AnnPin">
   
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -414,8 +414,6 @@ Darcula color scheme from the JetBrains family of IDEs
 
   
   
-  <link href="https://annpin.github.io/posts/index.xml" rel="alternate" type="application/rss+xml" title="あんぜんぴんの落書き帳 Feed" />
-  
 
   <meta name="generator" content="Hugo 0.37" />
 
@@ -458,121 +456,144 @@ Darcula color scheme from the JetBrains family of IDEs
 </div>
 
 
-
 <div class="pure-g">
   <div class="pure-u-1-24 pure-u-md-1-6"></div>
   <div class="pure-u-11-12 pure-u-md-2-3">
-    <div class="post-content">
-      <p class="posts-name">Posts:</p>
+    <div class="post">
 
-      <ul class="posts">
+      <div class="post-title">
+        <p class="footnote">
+        <time class="">07-17-2018</time>
         
         
         
-        <li>
-          
-          <a class="post-list" href="https://annpin.github.io/posts/18/07/17/linux-kernel-code-reading/">Linux カーネル v2.6.39 と v4.18-rc5 のコードをチョット比べてみる</a>
 
-          <p class="footnote">
-          <time datetime="07-17-2018">
-            07-17-2018
-          </time>
-          </p>
-        </li>
         
-        
-        
-        <li>
-          
-          <a class="post-list" href="https://annpin.github.io/posts/18/07/16/binary-analysis-memo/">バイナリ解析についてのメモ</a>
 
-          <p class="footnote">
-          <time datetime="07-16-2018">
-            07-16-2018
-          </time>
-          </p>
-        </li>
         
-        
-        
-        <li>
-          
-          <a class="post-list" href="https://annpin.github.io/posts/18/07/16/gdb-commands/">gdb のコマンドメモ</a>
+        </p>
+        <h1>Linux カーネル v2.6.39 と v4.18-rc5 のコードをチョット比べてみる</h1>
+      </div>
 
-          <p class="footnote">
-          <time datetime="07-16-2018">
-            07-16-2018
-          </time>
-          </p>
-        </li>
+      <div class="post-content">
         
-        
-        
-        <li>
-          
-          <a class="post-list" href="https://annpin.github.io/posts/18/03/27/c-cpp-const/">C/C&#43;&#43; の const 修飾子の位置で混乱しないために</a>
 
-          <p class="footnote">
-          <time datetime="03-27-2018">
-            03-27-2018
-          </time>
-          </p>
-        </li>
-        
-        
-        
-        <li>
-          
-          <a class="post-list" href="https://annpin.github.io/posts/18/03/07/cross-compiler/">macOS Sierra で非 LLVM な gcc をビルドし、他のプロセッサ向けのクロスコンパイラ gcc をビルドする</a>
+<p>2.6 系の Linux カーネルのコードを解説してくれている本を読んでみたら、
+最新の Linux カーネルの実装がどの程度変化しているのかちょっと調べてみたくなってしまった.</p>
 
-          <p class="footnote">
-          <time datetime="03-07-2018">
-            03-07-2018
-          </time>
-          </p>
-        </li>
-        
-        
-        
-        <li>
-          
-          <a class="post-list" href="https://annpin.github.io/posts/18/03/07/x86-emulator-book-on-macos/">macOS Sierra 環境で 自作エミュレータで学ぶ x86 アーキテクチャを読み進めるための環境構築をしたかった</a>
+<p>なので今回は <code>int $0x80</code> や <code>sysenter</code> が呼ばれた際のシステムコールハンドラの動きをちょっとだけ比べてみた.</p>
 
-          <p class="footnote">
-          <time datetime="03-07-2018">
-            03-07-2018
-          </time>
-          </p>
-        </li>
-        
-        
-        
-        <li>
-          
-          <a class="post-list" href="https://annpin.github.io/posts/18/03/06/hello-low-layer-programming/">低レイヤーのはじめの一歩</a>
+<p>ちょっと見比べてみたときのメモの単なる垂れ流し. <strong>オチなし.</strong></p>
 
-          <p class="footnote">
-          <time datetime="03-06-2018">
-            03-06-2018
-          </time>
-          </p>
-        </li>
-        
-        
-        
-        <li>
-          
-          <a class="post-list" href="https://annpin.github.io/posts/18/03/06/hello/">ブログを始めてみる (N 回目)</a>
+<h1 id="x86-x64-でのシステムコール呼び出し-int-0x80-と-sysenter-って何が違うのよ">x86/x64 でのシステムコール呼び出し - int $0x80 と sysenter って何が違うのよ</h1>
 
-          <p class="footnote">
-          <time datetime="03-06-2018">
-            03-06-2018
-          </time>
-          </p>
-        </li>
-        
-        
-      </ul>
+<p>x86 の Linux では古くは <code>int $0x80 / iret</code> によるソフトウェア割り込みでシステムコール呼び出しを行っていたらしいが、呼び出しのオーバーヘッドが大きいことから近年の実装では x86 では <code>sysenter/sysexit</code>、x64 では <code>syscall/sysret</code> が使われているらしい.</p>
+
+<p><code>sysenter</code> や <code>syscall</code> は近年の x86 や x64 CPU で追加された命令らしい. こっちのほうが <code>int $0x80</code> よりも高速に動くから、こっちを使うことにしましたって感じですかね.</p>
+
+<h1 id="v2-6-39">v2.6.39</h1>
+
+<p>Linux カーネル 2.6.39 では <code>arch/x86/kernel/entry_32.S#498</code> および <code>arch/x86/kernel/entry_64.S#455</code> にて <code>ENTRY(system_call)</code> によって <code>system_call</code> というラベルが定義されている.</p>
+
+<ul>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/tree/arch/x86/kernel/entry_32.S?h=linux-2.6.39.y#n498">arch/x86/kernel/entry_32.S#498</a></li>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/tree/arch/x86/kernel/entry_64.S?h=linux-2.6.39.y#n455">arch/x86/kernel/entry_64.S#455</a></li>
+</ul>
+
+<p>加えて、<code>arch/x86/kernel/traps.c#871</code> には <code>system_call</code> ラベルを割り込みハンドラに登録しているようなので、<code>system_call</code> ラベルがシステムコール実行の窓口になっている模様.</p>
+
+<ul>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/tree/arch/x86/kernel/traps.c?h=linux-2.6.39.y#n871">arch/x86/kernel/traps.c#871</a></li>
+</ul>
+
+<p><code>arch/x86/kernel/entry_32.S#509</code> および <code>arch/x86/kernel/entry_64.S#487</code> で実際にシステムコール処理関数を実行している. <code>sys_call_table</code> はシステムコールハンドラの一覧が登録されているテーブルの先頭を示すラベルとなっており、<code>eax</code> にポインタ幅 (4 バイト あるいは 8 バイト) をかけた値を <code>sys_call_table</code> に加えることで、<code>eax</code> の値を添え字にして実行するシステムコールを切り替えている.</p>
+
+<ul>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/tree/arch/x86/kernel/entry_32.S?h=linux-2.6.39.y#n509">arch/x86/kernel/entry_32.S#509</a></li>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/tree/arch/x86/kernel/entry_64.S?h=linux-2.6.39.y#n487">arch/x86/kernel/entry_64.S#487</a></li>
+</ul>
+
+<p>システムコールの一覧は <code>arch/x86/kernel/syscall_table_32.S</code> に <code>sys_call_table</code> ラベル以下の定義として書かれている.</p>
+
+<ul>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/tree/arch/x86/kernel/syscall_table_32.S?h=linux-2.6.39.y">arch/x86/kernel/syscall_table_32.S</a></li>
+</ul>
+
+<h1 id="v4-18-rc5">v4.18-rc5</h1>
+
+<p>現在の最新バージョン 4.18-rc5 では <code>arch/x86/kernel/entry_32.S</code> や <code>arch/x86/kernel/entry_64.S</code> は <code>arch/x86/entry/entry_32.S</code> および <code>arch/x86/entry/entry_64.S</code> へと移動している.</p>
+
+<p><code>ENTRY(system_call)</code> という記述は消えており、代わりに <code>entry_32.S</code> には <code>ENTRY(entry_SYSENTER_32)#414</code> および <code>ENTRY(entry_INT80_32)#532</code>、<code>entry_64.S</code> には <code>ENTRY(entry_SYSCALL_64)#206</code> というラベルがそれぞれ定義されている. (<code>int $0x80</code> は 32 bit 環境の後方互換のためにしか利用されていないのだろう)</p>
+
+<ul>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/entry_32.S?h=v4.18-rc5#n414">arch/x86/entry/entry_32.S#414</a></li>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/entry_32.S?h=v4.18-rc5#n532">arch/x86/entry/entry_32.S#532</a></li>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/entry_64.S?h=v4.18-rc5#n206">arch/x86/entry/entry_64.S#206</a></li>
+</ul>
+
+<p>各システムコール処理関数の呼び出しは、<code>entry_32.S</code> では <code>do_fast_syscall_32#456</code> および <code>do_int80_syscall_32#544</code>、<code>entry_64.S</code> では <code>do_syscall_64#238</code> で行われているっぽい.</p>
+
+<ul>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/entry_32.S?h=v4.18-rc5#n456">arch/x86/entry/entry_32.S#456</a></li>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/entry_32.S?h=v4.18-rc5#n544">arch/x86/entry/entry_32.S#544</a></li>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/entry_64.S?h=v4.18-rc5#n238">arch/x86/entry/entry_64.S#238</a></li>
+</ul>
+
+<p>これらの <code>do_</code> 系の関数は <code>arch/x86/entry/common.c</code> 中にそれぞれ定義されている.
+(<code>do_fast_syscall_32()#353</code>、<code>do_int80_syscall_32#345</code>、<code>do_syscall_64()#272</code>)</p>
+
+<ul>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/common.c?h=v4.18-rc5#n353">arch/x86/entry/common.c#353</a></li>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/common.c?h=v4.18-rc5#n345">arch/x86/entry/common.c#345</a></li>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/common.c?h=v4.18-rc5#n272">arch/x86/entry/common.c#272</a></li>
+</ul>
+
+<p>実際のシステムコール処理関数の呼び出しは <code>ia32_sys_call_table</code> あるいは <code>sys_call_table</code> というシステムコールハンドラ一覧が登録された関数ポインタ配列を介して行っている模様.
+x86 では <code>#326</code>、<code>#334</code>、x64 では <code>#290</code> で実際に呼び出しを行っているらしい.</p>
+
+<ul>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/common.c?h=v4.18-rc5#n326">arch/x86/entry/common.c#326</a></li>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/common.c?h=v4.18-rc5#n334">arch/x86/entry/common.c#334</a></li>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/common.c?h=v4.18-rc5#n290">arch/x86/entry/common.c#290</a></li>
+</ul>
+
+<p>なお、v2.6.39 においてシステムコールハンドラの一覧が記述されていた <code>arch/x86/kernel/syscall_table_32.S</code> は既に消滅している.
+そのかわりに、<code>arch/x86/entry/syscalls</code> ディレクトリに <code>syscall_32.tbl</code> および <code>syscall_64.tbl</code> というシステムコール一覧が書かれたファイルが新たに作られている.</p>
+
+<ul>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/syscalls/syscall_32.tbl?h=v4.18-rc5">arch/x86/entry/syscalls/syscall_32.tbl</a></li>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/syscalls/syscall_64.tbl?h=v4.18-rc5">arch/x86/entry/syscalls/syscall_64.tbl</a></li>
+</ul>
+
+<p>で、おそらくは同じディレクトリに存在するシェルスクリプト <code>syscalltbl.sh</code> や <code>Makefile</code> の雰囲気を察するに、システムコール一覧が定義されたアセンブリコードはこれらのシェルスクリプトで自動生成してるっぽい.（細かく読めてはいないが)</p>
+
+<ul>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/syscalls/syscalltbl.sh?h=v4.18-rc5">arch/x86/entry/syscalls/syscalltbl.sh</a></li>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/syscalls/Makefile?h=v4.18-rc5">arch/x86/entry/syscalls/Makefile</a></li>
+</ul>
+
+<p>変数 <code>ia32_sys_call_table</code> や <code>sys_call_table</code> は <code>arch/x86/entry/syscall_32.c#27</code> や <code>arch/x86/entry/syscall_64.c#18</code> あたりで定義されているっぽい. が、この変数の定義の記述がかなり謎&hellip;</p>
+
+<ul>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/syscall_32.c?h=v4.18-rc5#n27">arch/x86/entry/syscall_32.c#27</a></li>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/syscall_64.c?h=v4.18-rc5#n18">arch/x86/entry/syscall_64.c#18</a></li>
+</ul>
+
+<p><code>#include&lt;asm/syscalls_32.h&gt;</code> や <code>#include &lt;asm/syscalls_64.h&gt;</code> という記述が含まれているが、リポジトリ内にはこれらのヘッダファイルは見当たらない.
+前述の <code>arch/x86/entry/syscalls/Makefile</code> 中の記述の雰囲気的に、これらのヘッダファイルも自動生成されると思われる.</p>
+
+<ul>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/syscalls/Makefile?h=v4.18-rc5#n49">arch/x86/entry/syscalls/Makefile#49</a></li>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/arch/x86/entry/syscalls/Makefile?h=v4.18-rc5#n51">arch/x86/entry/syscalls/Makefile#51</a></li>
+</ul>
+
+<h1 id="総評">総評</h1>
+
+<p>（案の定）原型ないやん.</p>
+
+<p>まぁでも、わりと読もうとすれば読めそう. もう少し本で勉強してからそのうち再チャレンジしてみよう.</p>
+
+      </div>
     </div>
   </div>
   <div class="pure-u-1-24 pure-u-md-1-6"></div>
@@ -606,7 +627,7 @@ Darcula color scheme from the JetBrains family of IDEs
 
         </ul>
         <a href="#" class="pure-menu-link pull-right" id="gototop-btn">↑↑</a>
-        <a href="https://annpin.github.io/posts/index.xml" class="pure-menu-link pull-right">RSS</a>
+        <a href="" class="pure-menu-link pull-right">RSS</a>
       </div>
       
       <p id="foot-copyright">© 2018. All rights reserved.</p>
