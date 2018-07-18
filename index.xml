@@ -36,11 +36,9 @@ v2.6.39 Linux カーネル 2.6.39 では arch/x86/kernel/entry_32.S#498 およ�
       <description>バイナリ解析ツールの使い方とか雑多なことについての個人的なメモ.
 不定期更新.
 ツールについて objdump 実行ファイルの逆アセンブルができる. コンパイル後に各関数がどんな機械語に落ちているのかを調べるのに便利.
-# アセンブリのみの出力を得る. $ objdump -d binary_file # 元の C 言語ソース付きの出力を得る. $ objdump -S binary_file # デフォルトの AT&amp;amp;T シンタックスではなく、(nasm などの) Intel シンタックスを使用して表示する. $ objdump -d -M intel binary_file  なお、バイナリファイルのフォーマットを objdump が自動判定できない場合には --target オプションを与えることでファイルの読み込みフォーマットを手動で設定することができる. (--target=coff-i386 など.)
+# アセンブリのみの出力を得る. $ objdump -d binary_file # 元の C 言語ソース付きの出力を得る. $ objdump -S binary_file # デフォルトの AT&amp;amp;T シンタックスではなく、(nasm などの) Intel シンタックスを使用して表示する. $ objdump -d -M intel binary_file # 大体出力結果が多すぎるので、head で先頭だけ取り出したりする. $ objdump -d binary_file | head # でも出力結果を細かく調べたいときには vim が便利. $ objdump -d binary_file | vim -  なお、バイナリファイルのフォーマットを objdump が自動判定できない場合には --target オプションを与えることでファイルの読み込みフォーマットを手動で設定することができる. (--target=coff-i386 など.)
 readelf readelf コマンドは ELF 形式の実行ファイルの解析ができる. 関数のシンボルテーブル情報が含まれているため、各関数がどのアドレスに割り当てられているのか確認できる. 複数の関数が同じアドレスに割り当てられているかを調べることで関数同士が互いにエイリアスになっているかを調べられる.
-$ readelf -a binary_file  strace 特定の実行ファイルが呼び出しているシステムコールの一覧を調べられる.
-$ strace binary_file  hexedit コマンドライン上で動くバイナリエディタ.
-$ hexedit binary_file  カーソルの移動は Ctrl + f/b/n/p. Emacs と同じ.</description>
+$ readelf -a binary_file  strace 特定の実行ファイルが呼び出しているシステムコールの一覧を調べられる.</description>
     </item>
     
     <item>

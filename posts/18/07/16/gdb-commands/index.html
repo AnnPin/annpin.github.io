@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
   
   <meta charset="utf-8">
@@ -463,7 +463,12 @@ Darcula color scheme from the JetBrains family of IDEs
 
       <div class="post-title">
         <p class="footnote">
-        <time class="">07-16-2018</time>
+
+        
+        Created: <time class="">2018/07/16 07:47</time><br>
+        Last Update: <time class="">2018/07/17 07:35</time>
+        
+
         
         
         
@@ -758,8 +763,39 @@ Darcula color scheme from the JetBrains family of IDEs
 
 <pre><code>(gdb) where
 (gdb) info registers
+
+# http://flex.phys.tohoku.ac.jp/texi/gdb-j/gdb-j_41.html
 (gdb) x/s $ecx
+(gdb) printf &quot;%s&quot;, $ecx
+
 (gdb) x/16x $esp
+
+
+# なんか直前に x/? を実行した場合、? によって表示のされ方が変わるっぽい.
+# x/s だと単位がバイト単位になってしまって x/16x の単位もバイト単位になってしまうが
+# x/wx の後に x/16x とすると 4 バイト単位になって表示される.
+(gdb) x/s $ecx
+0xb7fff000:      &quot;Hello World! 1 /home/user/hello/hello\n&quot;
+(gdb) x/16x $esp
+0xbfffeec8:     0x92    0x3d    0x05    0x08    0x26    0x00    0x00    0x00
+0xbfffeed0:     0x71    0x76    0x06    0x08    0x01    0x00    0x00    0x00
+(gdb) x/wx $esp
+0xbfffeec8:     0x08053d92
+(gdb) x/16x $esp
+0xbfffeec8:     0x08053d92      0x00000026      0x08067671      0x00000001
+0xbfffeed8:     0xb7fff000      0x00000026      0x080d68c0      0x00000026
+0xbfffeee8:     0xb7fff000      0xbfffef14      0x0806819b      0x080d68c0
+0xbfffeef8:     0xb7fff000      0x00000026      0xbfffef34      0x08069732
+
+
+#  指定したアドレスに格納されている機械語を逆アセンブルする.
+(gdb) disassemble 0x110414
+
+#  指定したアドレスに格納されている値を取り出し、その値をアドレスとして解釈した場合に
+#  そのアドレスに格納されている機械語を逆アセンブルする.
+#  以下の場合、0x80d6750 からの 4 バイト領域に 0x110414 が格納されていた場合には上の実行結果と
+#  同じとなる.
+(gdb) disassemble *0x80d6750
 </code></pre>
 
 <h1 id="コアダンプを解析する">コアダンプを解析する</h1>

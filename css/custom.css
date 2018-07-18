@@ -24,8 +24,10 @@ code, kbd, pre, samp {
 }
 
 /* article */
-.post-content {
+.post {
     line-height: 1.75;
+}
+.post-content {
     /* tail space */
     padding-bottom: 5em;
 }

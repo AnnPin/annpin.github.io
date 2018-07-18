@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
   
   <meta charset="utf-8">
@@ -463,7 +463,12 @@ Darcula color scheme from the JetBrains family of IDEs
 
       <div class="post-title">
         <p class="footnote">
-        <time class="">07-16-2018</time>
+
+        
+        Created: <time class="">2018/07/16 12:30</time><br>
+        Last Update: <time class="">2018/07/18 08:31</time>
+        
+
         
         
         
@@ -497,6 +502,12 @@ $ objdump -S binary_file
 
 # デフォルトの AT&amp;T シンタックスではなく、(nasm などの) Intel シンタックスを使用して表示する.
 $ objdump -d -M intel binary_file
+
+# 大体出力結果が多すぎるので、head で先頭だけ取り出したりする.
+$ objdump -d binary_file | head
+
+# でも出力結果を細かく調べたいときには vim が便利.
+$ objdump -d binary_file | vim -
 </code></pre>
 
 <p>なお、バイナリファイルのフォーマットを <code>objdump</code> が自動判定できない場合には <code>--target</code>
@@ -542,6 +553,78 @@ $ ndisasm -b 32 binary_file
 $ ndisasm -b 32 -e 0x24 binary_file
 
 </code></pre>
+
+<h1 id="シェル上でのファイル検索">シェル上でのファイル検索</h1>
+
+<p>バイナリ解析全然関係ないけどよく忘れるので&hellip; (恥)</p>
+
+<p><code>find</code> コマンドでファイル名についての絞り込み、<code>grep</code> コマンドでファイルの内容についての検索ができる.
+<code>find</code> はデフォルトでディレクトリを再帰的に検索していくが、<code>grep</code> は通常 1 つのファイル内の検索しか行わず、 <code>-r</code> オプションを渡さないと再帰的には検索しないので注意.</p>
+
+<p>検索ヒット数を調べたいときには出力中の改行文字の個数を調べればよいので、さらに <code>wc -l</code> をかます. (<code>-l</code> がないと全体の文字列数をカウントするので注意.)</p>
+
+<p>なお、<code>wc</code> は標準入力を直接処理対象にすることができる (単に <code>$ wc</code> として <code>wc</code> を起動すると、<code>EOF</code> - つまり <code>Ctrl + D</code> が入力されるまでのキーボード入力を対象に文字数をカウントできる) ので単にパイプ <code>|</code> でつなぐことで <code>find</code> や <code>grep</code> の出力結果のカウントに利用できるが、<code>grep</code> は標準入力を処理するようには (当然) できていないので、<code>xargs</code> を使って標準入力からコマンドラインを作ってから処理する必要があるらしい.</p>
+
+<p><a href="https://ja.wikipedia.org/wiki/Xargs#%E5%8B%95%E4%BD%9C%E4%BE%8B">Wikipedia</a> 曰く、<code>find . -name &quot;foo&quot; | xargs grep bar</code> は <code>grep bar `find . -name &quot;foo&quot;`</code> に相当するらしい.</p>
+
+<pre><code class="language-bash"># カレントディレクトリ以下に存在する拡張子が &quot;.S&quot; のファイルの個数を調べる.
+$ find . -name &quot;*.S&quot; | wc -l
+
+# カレントディレクトリ以下のファイルに対し &quot;syscall&quot; という文字列を検索し、ヒットした箇所の数を調べる.
+$ grep -r syscall . | wc -l
+
+# カレントディレクトリ以下に存在する拡張子が &quot;.S&quot; のファイルに対して &quot;syscall&quot; という文字列を検索し、ヒットした箇所の数を調べる.
+$ find . -name &quot;*.S&quot; | xargs grep syscall | wc -l
+</code></pre>
+
+<p>なお、検索結果に対してさらにフィルタリングできるとより便利になる. (まだ使いこなせず.)
+例えば <code>grep -r hoge .</code> を実行して以下のような結果が得られたとする.</p>
+
+<pre><code>$ grep -r hoge .
+./sample.txt:This is a hoge1 line.
+./sample.txt:This is a hoge2 line.
+./sample2.txt:This is a hoge1 line.
+./sample2.txt:This is a hoge2 line.
+</code></pre>
+
+<p>このように、<code>grep -r</code> の出力結果は <strong>&ldquo;ファイル名:検索がヒットした行&rdquo;</strong> というフォーマットになっている.
+このとき、&rdquo;:&rdquo; から後ろを削除して出力することができれば、検索がヒットしたファイル名だけを出力することができ、結果が見通しやすくなる.</p>
+
+<p>このような出力結果のフィルタリングには正規表現が使える. この例の場合には、<code>sed</code> や <code>perl</code> を使って次のように書ける.</p>
+
+<pre><code class="language-bash"># sed を使う場合.
+$ grep -r hoge . | sed 's/:.*//'
+
+# perl を使う場合.
+$ grep -r hoge . | perl -pe 's/:.*//'
+</code></pre>
+
+<p>これによって以下のように検索がヒットしたファイル名だけを得ることができる.</p>
+
+<pre><code>$ grep -r hoge . | sed 's/:.*//'
+./sample.txt
+./sample.txt
+./sample2.txt
+./sample2.txt
+</code></pre>
+
+<p>さらに、一つのファイル内で複数の行が検索にヒットしてしまって出力が大量になってしまっている場合には、
+このフィルタリングした結果をさらに <code>uniq</code> コマンドでフィルタリングすることができる.</p>
+
+<pre><code>$ grep -r hoge . | sed 's/:.*//' | uniq
+./sample.txt
+./sample2.txt
+</code></pre>
+
+<h3 id="参考文献">参考文献</h3>
+
+<ul>
+<li><a href="https://www.amazon.co.jp/dp/4798044784">ハロー“Hello,World&rdquo;OSと標準ライブラリのシゴトとしくみ</a>
+
+<ul>
+<li>シェルの操作に引っかかっているとなかなか読み進められず&hellip;</li>
+</ul></li>
+</ul>
 
 <h1 id="システムコールについて">システムコールについて</h1>
 
@@ -651,6 +734,18 @@ addr.|  | argv addr    |
 
 <p>leave の処理は <code>mov %ebp,%esp</code> の後に <code>pop %ebp</code> をして状態を 0. start と同じ状態に戻すこと.
 直後の ret によってスタック先頭の Ret.addr が pop されてプログラムカウンタにセットされジャンプ.</p>
+
+<h2 id="x86-linux-での-int-0x80-によるシステムコール呼び出し">x86 Linux での int $0x80 によるシステムコール呼び出し</h2>
+
+<p>eax にシステムコール番号、ebx、ecx、edx にシステムコールへの引数を順にセットして <code>int $0x80</code> を呼び出すことでシステムコールを実行することができる.
+システムコールからの戻り値は eax にセットされる.</p>
+
+<p>Linux カーネル v2.6.39 の場合、<code>arch/x86/kernel/entry_32.S#194</code> からの <code>SAVE_ALL</code> マクロの中でスタックにレジスタを順にプッシュすることでシステムコールハンドラへの引数のセットを行っている.
+したがって、この順序を参考にしておけばよい. 最後に <code>push</code> されるのは <code>#215</code> の ebx なので、ebx がシステムコールハンドラの 1st arg となる.</p>
+
+<ul>
+<li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/tree/arch/x86/kernel/entry_32.S?h=linux-2.6.39.y#n194">arch/x86/kernel/entry_32.S#194</a></li>
+</ul>
 
 <h2 id="x86-64-での関数呼び出し">x86-64 での関数呼び出し</h2>
 
