@@ -466,7 +466,7 @@ Darcula color scheme from the JetBrains family of IDEs
 
         
         Created: <time class="">2018/07/16 12:30</time><br>
-        Last Update: <time class="">2018/07/18 08:31</time>
+        Last Update: <time class="">2018/07/18 08:16</time>
         
 
         
@@ -561,9 +561,14 @@ $ ndisasm -b 32 -e 0x24 binary_file
 <p><code>find</code> コマンドでファイル名についての絞り込み、<code>grep</code> コマンドでファイルの内容についての検索ができる.
 <code>find</code> はデフォルトでディレクトリを再帰的に検索していくが、<code>grep</code> は通常 1 つのファイル内の検索しか行わず、 <code>-r</code> オプションを渡さないと再帰的には検索しないので注意.</p>
 
-<p>検索ヒット数を調べたいときには出力中の改行文字の個数を調べればよいので、さらに <code>wc -l</code> をかます. (<code>-l</code> がないと全体の文字列数をカウントするので注意.)</p>
+<p>検索ヒット数を調べたいときには出力中の改行文字の個数を調べればよいので、出力に対してさらに <code>wc -l</code> をかませばよい. (<code>-l</code> がないと全体の文字列数をカウントするので注意.)</p>
 
-<p>なお、<code>wc</code> は標準入力を直接処理対象にすることができる (単に <code>$ wc</code> として <code>wc</code> を起動すると、<code>EOF</code> - つまり <code>Ctrl + D</code> が入力されるまでのキーボード入力を対象に文字数をカウントできる) ので単にパイプ <code>|</code> でつなぐことで <code>find</code> や <code>grep</code> の出力結果のカウントに利用できるが、<code>grep</code> は標準入力を処理するようには (当然) できていないので、<code>xargs</code> を使って標準入力からコマンドラインを作ってから処理する必要があるらしい.</p>
+<p><code>wc</code> などの UNIX コマンドは標準入力を直接処理対象にすることができる (単に <code>$ wc</code> として <code>wc</code> を起動すると、<code>EOF</code> - つまり <code>Ctrl + D</code> が入力されるまでのキーボード入力を対象に文字数をカウントできる) ので単にパイプ <code>|</code> でつなぐことで <code>wc</code> を <code>find</code> や <code>grep</code> の出力結果のカウントに利用できる.</p>
+
+<p><code>find</code> からの出力結果を <code>grep</code> に渡す場合、単に <code>find . -name &quot;*.txt&quot; | grep hoge</code> とすると &ldquo;拡張子が <code>.txt</code> のファイルのうち、名前に <code>hoge</code> を含むファイル名 (<code>hoge.txt</code> や <code>hoge2.txt</code> など)&rdquo; を検索するという処理となる.</p>
+
+<p>そうではなく、<code>find</code> から返された結果中に含まれる各ファイルの中身に対して <code>grep</code> で検索をしたいという場合には <code>xargs</code> コマンドを間に挟むことによって標準入力からコマンドラインを作って <code>grep</code> に処理させる必要がある.
+その場合は <code>find . -name &quot;*.txt&quot; | xargs grep hoge</code> と入力すれば良い. これにより、&rdquo;拡張子が <code>.txt</code> の各ファイルに対して <code>grep</code> で <code>hoge</code> という文字列を検索する&rdquo; という処理となった.</p>
 
 <p><a href="https://ja.wikipedia.org/wiki/Xargs#%E5%8B%95%E4%BD%9C%E4%BE%8B">Wikipedia</a> 曰く、<code>find . -name &quot;foo&quot; | xargs grep bar</code> は <code>grep bar `find . -name &quot;foo&quot;`</code> に相当するらしい.</p>
 
@@ -575,6 +580,13 @@ $ grep -r syscall . | wc -l
 
 # カレントディレクトリ以下に存在する拡張子が &quot;.S&quot; のファイルに対して &quot;syscall&quot; という文字列を検索し、ヒットした箇所の数を調べる.
 $ find . -name &quot;*.S&quot; | xargs grep syscall | wc -l
+</code></pre>
+
+<p>また、<code>grep</code> に対して <code>-v</code> オプションを渡すと &ldquo;指定したパターンを <strong>含まない行</strong>&rdquo; にヒットするので、一度 <code>grep</code> した結果から特定のパターンを含まない行だけを抽出する二段目の <code>grep</code> に利用できる.</p>
+
+<pre><code class="language-bash"># カレントディレクトリ以下のファイルに対して &quot;PSEUDO&quot; という文字列を検索し、ヒットした行の中から &quot;PSEUDO_&quot; を含まない行だけを表示する.
+# 関数やマクロの参照を調べたい時に、&quot;PSEUDO_&quot; は除外するが &quot;PSEUDO&quot; を含む参照だけを調べるような場合に便利.
+$ grep -r PSEUDO . | grep -v PSEUDO_
 </code></pre>
 
 <p>なお、検索結果に対してさらにフィルタリングできるとより便利になる. (まだ使いこなせず.)

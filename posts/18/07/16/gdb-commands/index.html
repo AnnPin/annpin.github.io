@@ -466,7 +466,7 @@ Darcula color scheme from the JetBrains family of IDEs
 
         
         Created: <time class="">2018/07/16 07:47</time><br>
-        Last Update: <time class="">2018/07/17 07:35</time>
+        Last Update: <time class="">2018/07/18 08:16</time>
         
 
         
@@ -787,6 +787,12 @@ Darcula color scheme from the JetBrains family of IDEs
 0xbfffeee8:     0xb7fff000      0xbfffef14      0x0806819b      0x080d68c0
 0xbfffeef8:     0xb7fff000      0x00000026      0xbfffef34      0x08069732
 
+# 特定のアドレス内に含まれているアドレスを確認する.
+# アドレス 0x80d6750 に配置されたポインタ変数が参照している先 (アドレス) を表示する.
+(gdb) print/x *0x80d6750
+$1 = 0x110414
+(gdb) x/wx *0x80d6750
+0x110414 &lt;__kernel_vsyscall&gt;:   0x00c380cd
 
 #  指定したアドレスに格納されている機械語を逆アセンブルする.
 (gdb) disassemble 0x110414
