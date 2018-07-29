@@ -4,6 +4,12 @@
     background: #009e8f;
 }
 
+/* article title style */
+.post-title {
+    margin-top: 2em;
+    margin-bottom: 2em;
+}
+
 /* article font style */
 .post, .posts {
     font-family: 'Georgia', 'Times New Roman', 'FreeSerif', serif;
@@ -61,6 +67,7 @@ code, kbd, pre, samp {
 .post-content thead tr th,
 .post-content tbody tr td {
     border-right: black 1px solid;
+    padding: 2px 20px;
 }
 
 .post-content thead tr th:last-child,

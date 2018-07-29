@@ -460,23 +460,22 @@ Darcula color scheme from the JetBrains family of IDEs
   <div class="pure-u-1-24 pure-u-md-1-6"></div>
   <div class="pure-u-11-12 pure-u-md-2-3">
     <div class="post">
+      <p class="footnote">
+      
+      Created: <time class="">2018/07/16 12:30</time><br>
+      Last Update: <time class="">2018/07/30 04:45</time>
+      
+
+      
+      
+      
+
+      
+
+      
+      </p>
 
       <div class="post-title">
-        <p class="footnote">
-
-        
-        Created: <time class="">2018/07/16 12:30</time><br>
-        Last Update: <time class="">2018/07/18 08:16</time>
-        
-
-        
-        
-        
-
-        
-
-        
-        </p>
         <h1>バイナリ解析についてのメモ</h1>
       </div>
 
@@ -491,7 +490,7 @@ Darcula color scheme from the JetBrains family of IDEs
 
 <h2 id="objdump">objdump</h2>
 
-<p>実行ファイルの逆アセンブルができる.
+<p>実行ファイルの逆アセンブルができる汎用ツール.
 コンパイル後に各関数がどんな機械語に落ちているのかを調べるのに便利.</p>
 
 <pre><code class="language-bash"># アセンブリのみの出力を得る.
@@ -520,7 +519,19 @@ $ objdump -d binary_file | vim -
 関数のシンボルテーブル情報が含まれているため、各関数がどのアドレスに割り当てられているのか確認できる.
 複数の関数が同じアドレスに割り当てられているかを調べることで関数同士が互いにエイリアスになっているかを調べられる.</p>
 
-<pre><code class="language-bash">$ readelf -a binary_file
+<pre><code class="language-bash"># -a は全ての情報を出力する. --all でも同様.
+$ readelf -a binary_file
+$ readelf --all binary_file
+
+# -S はセクション情報を出力する. --sections や --section-headers でも同様.
+$ readelf -S binary_file
+$ readelf --sections binary_file
+$ readelf --section-headers binary_file
+
+# -l はセグメント情報を出力する. --segments や --program-headers でも同様.
+$ readelf -l binary_file
+$ readelf --segments binary_file
+$ readelf --program-headers binary_file
 </code></pre>
 
 <h2 id="strace">strace</h2>
@@ -552,6 +563,70 @@ $ ndisasm -b 32 binary_file
 # 先頭から特定のバイト数分を無視して逆アセンブルする. (この場合は先頭 0x24 バイトを無視.)
 $ ndisasm -b 32 -e 0x24 binary_file
 
+</code></pre>
+
+<h2 id="ldd">ldd</h2>
+
+<p>実行ファイルにリンクしている共有ライブラリを解析する.</p>
+
+<pre><code class="language-bash">$ ldd binary_file
+</code></pre>
+
+<h2 id="gcc">gcc</h2>
+
+<p>いつもお馴染みの gcc. オプションだけちょっとまとめておく.</p>
+
+<pre><code class="language-bash"># gdb でのデバッグの際に便利なようにソースコードのシンボル情報を付加して静的リンク.
+$ gcc hello.c -o hello -Wall -g -O0 -static
+
+# プリプロセス、コンパイルまでを行い、アセンブリコードを出力. (アセンブル以降の処理を打ち切り)
+$ gcc -S hello.c -o hello.s
+
+# アセンブルを行い、オブジェクトファイルを出力. (リンク以降の処理を打ち切り)
+$ gcc -c hello.s -o hello.o
+
+# リンクを行い、実行ファイルを出力.
+$ gcc hello.o -o hello
+
+# 標準出力にログを出力する.
+$ gcc hello.c -o hello -Wall -g -O0 -static -v
+
+# 実行ファイルが生成されるまでの過程で生成される中間ファイルを削除せずに残す.
+$ gcc -save-temps -o hello hello.c -Wall -g -O0 -static
+</code></pre>
+
+<h2 id="ld">ld</h2>
+
+<p>リンカ. 使いそうなオプションをメモ.</p>
+
+<pre><code class="language-bash"># gcc が実行ファイルを生成する際に使用している標準のリンカスクリプトを表示.
+$ ld -verbose
+</code></pre>
+
+<h2 id="make">make</h2>
+
+<p>ビルドツール. <code>-j</code> オプションでコア数を指定できる.</p>
+
+<pre><code class="language-bash"># 4 コアに分散してビルドを行う.
+$ make -j 4
+</code></pre>
+
+<h2 id="configure-スクリプト">configure スクリプト</h2>
+
+<p>Makefile 生成ツール.
+<code>--prefix</code> で <code>make install</code> でのインストール先指定ができる. また、<code>--disable-werror</code> で <code>make</code> でワーニングが発生した際にエラー扱いしなくなる.</p>
+
+<pre><code class="language-bash"># glibc の configure スクリプトをビルド用ディレクトリから実行.
+# make install でのインストール先を /usr/local/glibc-2.21 に指定.
+$ ../glibc-2.21/configure --prefix=/usr/local/glibc-2.21 --disable-werror
+</code></pre>
+
+<h2 id="strings">strings</h2>
+
+<p>バイナリファイル中に埋め込まれている文字列を列挙する.</p>
+
+<pre><code class="language-bash"># 実行ファイル中に含まれている文字列の中から &quot;Hoge&quot; を含むものを表示する.
+$ strings binary_file | grep Hoge
 </code></pre>
 
 <h1 id="シェル上でのファイル検索">シェル上でのファイル検索</h1>
@@ -628,15 +703,14 @@ $ grep -r hoge . | perl -pe 's/:.*//'
 ./sample2.txt
 </code></pre>
 
-<h3 id="参考文献">参考文献</h3>
+<p>後は大量の検索結果中から特定の文字列を探すような場合には最後に <code>less</code> を繋げばよい. まぁ、僕は <code>vim</code> に慣れすぎてしまってしっくりこないからいつも <code>vim</code> に繋いでしまうんだけれども.</p>
 
-<ul>
-<li><a href="https://www.amazon.co.jp/dp/4798044784">ハロー“Hello,World&rdquo;OSと標準ライブラリのシゴトとしくみ</a>
+<pre><code># less に繋ぐ場合.
+$ grep -r hoge . | less
 
-<ul>
-<li>シェルの操作に引っかかっているとなかなか読み進められず&hellip;</li>
-</ul></li>
-</ul>
+# vim に繋ぐ場合.
+$ grep -r hoge . | vim -
+</code></pre>
 
 <h1 id="システムコールについて">システムコールについて</h1>
 
@@ -749,7 +823,7 @@ addr.|  | argv addr    |
 
 <h2 id="x86-linux-での-int-0x80-によるシステムコール呼び出し">x86 Linux での int $0x80 によるシステムコール呼び出し</h2>
 
-<p>eax にシステムコール番号、ebx、ecx、edx にシステムコールへの引数を順にセットして <code>int $0x80</code> を呼び出すことでシステムコールを実行することができる.
+<p>eax にシステムコール番号、ebx、ecx、edx &hellip; にシステムコールへの引数を順にセットして <code>int $0x80</code> を呼び出すことでシステムコールを実行することができる.
 システムコールからの戻り値は eax にセットされる.</p>
 
 <p>Linux カーネル v2.6.39 の場合、<code>arch/x86/kernel/entry_32.S#194</code> からの <code>SAVE_ALL</code> マクロの中でスタックにレジスタを順にプッシュすることでシステムコールハンドラへの引数のセットを行っている.
@@ -759,7 +833,7 @@ addr.|  | argv addr    |
 <li><a href="https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/tree/arch/x86/kernel/entry_32.S?h=linux-2.6.39.y#n194">arch/x86/kernel/entry_32.S#194</a></li>
 </ul>
 
-<h2 id="x86-64-での関数呼び出し">x86-64 での関数呼び出し</h2>
+<h2 id="x86-64-での関数呼び出し-abi">x86-64 での関数呼び出し ABI</h2>
 
 <p>x86 とは異なり、関数呼び出しの際の引数は 6 つ目まではレジスタ経由、7 つ目以降はスタック経由で渡される.</p>
 
@@ -809,6 +883,172 @@ addr.|  | argv addr    |
 <p>これを守っていないと関数呼び出しの直後にバスエラーでプログラムが死ぬ.</p>
 
 <p>なお、関数からの戻り値は相変わらず <code>rax</code> で返される.</p>
+
+<h2 id="システムコールラッパー">システムコールラッパー</h2>
+
+<p>標準 C ライブラリ (glibc など) が提供している、システムコール呼び出しのためのラッパー関数. <code>int $0x80</code> や <code>sysenter</code>、<code>syscall</code> といったアセンブリ命令を実行する必要があるため、標準 C ライブラリのアーキテクチャ依存ディレクトリ中に収められている (<code>glibc-2.21/sysdeps</code> など).</p>
+
+<p>システムコール呼び出しのため、システムコールラッパー自体はアーキテクチャごとにカーネルが定めている ABI を満たすためにアセンブリコードで記述され、システムコール番号やシステムコール実行に必要となるパラメータを各レジスタに設定したりしている. このため、標準 C ライブラリの利用者となるプログラマはアーキテクチャごとのアセンブリコードを記述することなくカーネルのシステムコール呼び出しを行うことができる.</p>
+
+<p>なお、システムコールラッパーは利用者に対してシステムコール呼び出しのための API を提供しているとも捉えられる. Linux は POSIX で定めているシステムコール API に準拠していると言われているが、実際には Linux が POSIX に準拠できているのは glibc が POSIX に準拠した API を提供しているためであり、システムコールラッパー内で適切な Linux カーネルのシステムコール命令の呼び出しを行っている.</p>
+
+<p>例えば POSIX では <code>atexit(3)</code> 関数などで登録されたハンドラ関数を一切実行せずに直ちにプロセスを終了させる <code>_exit(2)</code> というシステムコール呼び出しのための API (システムコールラッパー) が規定されているが、Linux ではこの API は glibc によってアセンブリコードで書かれた関数として提供されている. (したがって通常の C 言語のプログラムから呼び出すことができる).</p>
+
+<p>実際にプロセスを終了させるためにはシステムコールラッパー <code>_exit(2)</code> の中から Linux カーネルに対してプロセスを終了させるためのシステムコール呼び出しを行わなければならないが、Linux カーネル v2.6 ではこの機能を提供するシステムコールとして <code>exit_group</code> というシステムコール手続きが呼ばれるようになっている.
+<!-- exit システムコール手続きがかつては利用されていた -->
+<!-- exit_group は 252、exit は 1 スレッド機能の追加によって追加されたっぽい --></p>
+
+<p>なお、<code>atexit(3)</code> 関数で登録したハンドラ関数を実行してからプロセスを終了する <code>exit(3)</code> という関数も標準 C ライブラリによって提供されている.</p>
+
+<p>glibc ではシステムコールラッパーはシェルスクリプトとマクロ展開によって自動生成されるようになっているらしく (テンプレートとなるコードは <code>glibc-2.21/sysdeps/unix/syscall-template.S</code> あたり. シェルスクリプトは <code>glibc-2.21/sysdeps/unix/make-syscalls.sh</code> あたり. このシェルスクリプトは Makefile から呼ばれるっぽい)、どのコードがどの処理に対応しているのかを調べる場合には glibc を自前でビルドし、その glibc と自分のプログラムをリンクさせて gdb 上でデバッグすることで標準 C ライブラリ内の処理をシンボリックデバッグできるようにするのが有効.</p>
+
+<h2 id="linux-におけるプログラム実行の際のスタートアップ処理と終了処理">Linux におけるプログラム実行の際のスタートアップ処理と終了処理</h2>
+
+<p>UNIX 系のシステムでは、プロセスは親プロセスから <code>fork(2)</code> システムコール呼び出しが行われることで子プロセスとして生成され、<code>exec()</code> 系の関数 (<code>execlp()</code> や <code>execvp()</code> など) から <code>execve(2)</code> システムコール呼び出しが行われる (あるいは直接 <code>execve(2)</code> システムコール呼び出しを行う) ことで新たなプログラムがメモリに書き込まれる.
+ユーザがシェルからプログラムを実行する場合、各プログラムのプロセスの親プロセスは多くの場合シェルとなる.</p>
+
+<p><code>execve(2)</code> システムコール呼び出しが行われると、OS カーネルによって実行ファイル読み込み、仮想メモリへのマッピング、argc/argv の初期化などの処理が行われた後、実行ファイルのエントリポイント情報に従ってエントリポイントのアドレスからプログラムの実行が開始される.</p>
+
+<p>x86 Linux では実行ファイルのフォーマットとして ELF フォーマットが採用されているため、このとき Linux カーネルは ELF フォーマットの実行ファイルを解釈し、メモリ上にロードしている.
+Linux v2.6 では <code>fs/binfmt_elf.c</code> 内で定義されている <code>load_elf_binary()</code> 関数によって ELF ファイルのロードができるようになっている. この <code>load_elf_binary()</code> 関数の末尾では <code>start_thread()</code> というアーキテクチャ依存の関数 (<code>arch/x86/kernel/process_32.c</code> などで定義されている) が呼び出されており、この関数によって子プロセスのためのプログラムカウンタやスタックポインタの値が設定されている.</p>
+
+<p>readelf を使用したり、<a href="http://caspar.hazymoon.jp/OpenBSD/annex/elf.html">ELF ヘッダのフォーマット</a> を知った上で ELF ファイルをバイナリエディタで開いたりすればその実行ファイルのエントリポイントのアドレスを知ることができる.</p>
+
+<p><code>main()</code> 実行前のスタートアップ処理は glibc などの標準 C ライブラリによって提供される.
+すなわち、作成した C 言語プログラムをコンパイル・アセンブルして得たオブジェクトファイル中にはスタートアップ処理は含まれておらず、glibc などの標準 C ライブラリをそのオブジェクトファイルをリンクさせた際に標準 C ライブラリからスタートアップ処理が提供されることとなる.</p>
+
+<p>スタートアップ処理は標準 C ライブラリによって提供されるため、スタートアップ処理のソースコードは標準 C ライブラリのソースコード中に含まれている.
+スタートアップ処理は各種レジスタの設定などが必要となることから、アセンブリコードで記述される必要がある. したがって、標準 C ライブラリのアーキテクチャ依存ディレクトリ内で管理されている. (x86 の場合、<code>glibc-2.21/sysdeps/i386/start.S</code>)</p>
+
+<p>gdb などで調べると、glibc をリンクすることで得た実行ファイルのエントリポイントアドレスには <code>_start</code> というシンボルが配置されていることがわかり、プログラムの実行は <code>_start()</code> から開始されることがわかる.
+<code>_start()</code> からは <code>__libc_start_main()</code> が <code>call</code> 命令によって呼び出される. その直後には <code>hlt</code> 命令が存在しているが、実際には <code>__libc_start_main()</code> の先から <code>_start()</code> には戻ってこないため、この <code>hlt</code> 命令は全く実行されない命令となっている.</p>
+
+<p><code>_start()</code> から呼び出される <code>__libc_start_main()</code> は C 言語で書かれたアーキテクチャ非依存の処理となっており、<code>glibc-2.21/csu/libc-start.c</code> 内で記述されている.
+<code>__libc_start_main()</code> からは <code>main()</code> が <code>call</code> 命令によって呼び出されることになる. これによって <code>main()</code> の処理が開始されるため、C 言語で記述したプログラムの本体が開始される.
+なお、<code>main()</code> の呼び出しの直前には <code>argc</code>、<code>argv</code>、<code>envp</code> といった引数の準備処理が <code>__libc_start_main()</code> 中で行われている.</p>
+
+<p><code>main()</code> の処理が終了して <code>return</code> すると再び <code>__libc_start_main()</code> に戻るが、その直後には <code>exit(3)</code> の呼び出しが行われる. この時、<code>main()</code> から <code>return</code> した際のステータスコードがそのまま <code>exit(3)</code> の引数として渡されるため、これらの関数は <code>exit(main(argc, argv, envp));</code> のような形で実行されるようになっている.</p>
+
+<p><code>exit(3)</code> は <code>__run_exit_handlers()</code> を呼び出すだけとなっており、実際の処理はこの関数で行われる. この関数は主に <code>atexit(3)</code> で登録したハンドラ関数の実行処理を行い、最後に <code>_exit(2)</code> を呼び出すようになっている.</p>
+
+<p><code>_exit(2)</code> の先ではシステムコール <code>exit_group</code> が呼ばれることとなり、プログラムはその時点で終了する.
+このため、<code>main()</code> の末尾では <code>return 0;</code> を行っても <code>exit(0);</code> を行ってもその振る舞いは全く変化しないこととなる.</p>
+
+<h2 id="buffered-i-o-のバッファリングモード">Buffered I/O のバッファリングモード</h2>
+
+<p>標準出力などに文字列を出力したい場合にはユーザプログラムから OS カーネルに対して <code>write</code> システムコール呼び出しをしなければならないが、一般的にシステムコール呼び出しはオーバーヘッドが大きい.
+したがってパフォーマンスを向上させるために、逐一システムコールを呼び出すのではなく一定量までバッファを貯めてからまとめて出力する Buffered I/O が使われている.</p>
+
+<p>プログラムの標準出力がターミナルなどに直接結びついている場合 (TTY) には <code>printf()</code> などの Buffered I/O 関数はラインバッファモードとなり、改行コードを認識するたびにバッファに貯められた文字列が標準出力に flush (<code>write</code> システムコールを用いて実際に書き出し) されるが、標準出力がパイプに結びついている場合や cron などで実行されていてターミナルなどに直接結びついていない場合にはバッファリングモードが切り替わり、フルバッファモードとなる. このため、実際に標準出力に対して flush されるタイミングがプログラムの実行方法によって変化する場合がある.</p>
+
+<p>特に最後に終了メッセージを表示して終了するようなプログラムの場合、ラインバッファモードでは改行文字を発見次第即座に標準出力に flush するが、フルバッファモードではバッファが満タンにならない限りは flush されないため、プログラムが <code>exit(3)</code> によって終了する際に終了メッセージなどがバッファ中に残ってしまって標準出力に書き出されないままとなる場合がある. その場合、<code>exit(3)</code> 中からバッファの flush が行われることとなり、プログラムの終了前に全ての文字列がバッファから標準出力に実際に書き出されることとなる.</p>
+
+<p>Buffered I/O のバッファ本体についての情報は <code>FILE</code> 構造体中のメンバ <code>*_IO_read_ptr</code>、<code>*_IO_read_end</code>、<code>*_IO_read_base</code>、<code>*_IO_write_base</code>、<code>*_IO_write_ptr</code>、<code>*_IO_write_end</code> にアクセスすることで得ることができる. glibc-2.21 では <code>FILE</code> は <code>struct _IO_FILE</code> の別名として <code>libio/stdio.h</code> で定義されており、<code>struct _IO_FILE</code> の定義は <code>libio/libio.h</code> に定義されている. <code>stdio</code>、<code>stdout</code>、<code>stderr</code> はいずれも <code>struct _IO_FILE</code> 型へのポインタ型 <code>struct _IO_FILE*</code> として定義されている.
+Buffered I/O の場合、実際の <code>write</code> システムコールによる flush 処理はこの <code>FILE</code> 構造体へのポインタ中の <code>*_IO_write_ptr</code> などを参照することで行っている. (<code>glibc-2.21/libio/fileops.c</code> の <code>_IO_new_file_overflow()</code> など参照).</p>
+
+<p>なお、標準 C ライブラリでは <code>scanf()</code> 関数などで標準入力を待ち受ける際、直前に標準出力のバッファを flush するようになっているらしい. これにより、入力を促すプロンプトを確実に表示してから入力を待ち受けることができるようになっている.</p>
+
+<h2 id="elf-フォーマットについて">ELF フォーマットについて</h2>
+
+<p>ELF フォーマットは先頭に ELF ヘッダがあり、内部はセクションとセグメントという 2 種類の単位で管理されている.
+それぞれ、セクションはリンクの単位、セグメントは実行時のロードの単位として使用されており、各セクションについてはセクションヘッダ、各セグメントについてはプログラムヘッダにまとめて記述されている.</p>
+
+<p>ELF ヘッダ、セクションヘッダ、セグメントヘッダのそれぞれの情報は <code>readelf</code> コマンドを用いて表示することができる.</p>
+
+<p>Linux カーネル v2.6 では <code>fs/binfmt_elf.c</code> で ELF ファイルのロード処理を行う <code>load_elf_binary()</code> 関数を定義しており、このファイルからインクルードされている <code>include/linux/elf.h</code> 中に ELF ヘッダやプログラムヘッダ、セクションヘッダといった各種ヘッダを解析するための構造体が定義されている.</p>
+
+<ul>
+<li>ELF ヘッダ</li>
+</ul>
+
+<pre><code class="language-c">#define EI_NIDENT      16
+
+typedef struct elf32_hdr{
+  unsigned char e_ident[EI_NIDENT];
+  Elf32_Half    e_type;
+  Elf32_Half    e_machine;
+  Elf32_Word    e_version;
+  Elf32_Addr    e_entry;  /* Entry point */
+  Elf32_Off     e_phoff;
+  Elf32_Off     e_shoff;
+  Elf32_Word    e_flags;
+  Elf32_Half    e_ehsize;
+  Elf32_Half    e_phentsize;
+  Elf32_Half    e_phnum;
+  Elf32_Half    e_shentsize;
+  Elf32_Half    e_shnum;
+  Elf32_Half    e_shstrndx;
+} Elf32_Ehdr;
+</code></pre>
+
+<ul>
+<li>セクションヘッダ (セクション情報管理)</li>
+</ul>
+
+<pre><code class="language-c">typedef struct {
+  Elf32_Word    sh_name;
+  Elf32_Word    sh_type;
+  Elf32_Word    sh_flags;
+  Elf32_Addr    sh_addr;
+  Elf32_Off     sh_offset;
+  Elf32_Word    sh_size;
+  Elf32_Word    sh_link;
+  Elf32_Word    sh_info;
+  Elf32_Word    sh_addralign;
+  Elf32_Word    sh_entsize;
+} Elf32_Shdr;
+</code></pre>
+
+<ul>
+<li>プログラムヘッダ (セグメント情報管理)</li>
+</ul>
+
+<pre><code class="language-c">typedef struct elf32_phdr{
+  Elf32_Word    p_type;
+  Elf32_Off     p_offset;
+  Elf32_Addr    p_vaddr;
+  Elf32_Addr    p_paddr;
+  Elf32_Word    p_filesz;
+  Elf32_Word    p_memsz;
+  Elf32_Word    p_flags;
+  Elf32_Word    p_align;
+} Elf32_Phdr;
+</code></pre>
+
+<p>セクションヘッダ中には <code>.text</code> や <code>.rodata</code> のようなセクション名やそのセクションが配置されるアドレス、ファイル中でのセクションの位置のオフセット値、セクションのサイズといった情報がまとめられている.</p>
+
+<p>また、プログラムヘッダ中には各セグメントの種類やオフセット、仮想アドレスと物理アドレスの対応などがまとめられており、<code>readelf</code> で確認すると <code>.text</code> や <code>.rodata</code> といった各セクションがどのセグメントに格納されているかが確認できるようになっている.</p>
+
+<p>セクションは主にリンカのために存在する管理単位となっている.
+複数のオブジェクトファイル中にはそれぞれの <code>.text</code> セクションや <code>.rodata</code> セクションが存在するが、リンカによってこれらのオブジェクトファイルがリンクされると、同じ名前のセクションが一つにまとめられて実行ファイルが生成される. すなわち、それぞれのオブジェクトファイル中の <code>.text</code> セクションや <code>.rodata</code> セクションは、生成される新たな実行ファイル中の <code>.text</code> セクションや <code>.rodata</code> セクションへとまとめられる.
+このリンカによるセクションのまとめかたは、リンカスクリプトと呼ばれる設定ファイルで制御できる.</p>
+
+<p>またセグメントは主にプログラムの実行の際のローダのために存在する管理単位となっている.
+<code>execve(2)</code> システムコールによって子プロセスに ELF フォーマットの実行ファイルがロードされる際、Linux カーネルはプログラムヘッダの情報を元にして実行ファイルをロードするようになっている.</p>
+
+<p>基本的にセクションヘッダのセクション情報はリンクの際に必要となる情報であり、実行時には必ずしも必須とはならない情報となっている (デバッグ情報などが含まれることがあるが).
+したがって実行ファイルのサイズ削減のために削除することができるようになっており、削除する際にセクションヘッダ領域以降のオフセットが狂うようなことが発生しないように実行ファイルの終端に存在している.</p>
+
+<p>逆に、プログラムヘッダのセグメント情報は ELF ファイルの先頭付近に配置されているため、予めセグメント情報を参照しておき、その情報に合わせてロード先のメモリ上に直接ロードすることができるようになっている.
+このため、最初に実行ファイル全体をロードしてから再度メモリ上にコピーし直すような手間が不要となる.</p>
+
+<h2 id="動的リンクと共有ライブラリ">動的リンクと共有ライブラリ</h2>
+
+<p>動的リンク (dynamic linking) は <strong>実行時リンク</strong> を指し、共有ライブラリ (shared object; .so) は <strong>仮想メモリ機構を用いてメモリ上で共有されるライブラリ</strong> を指す.</p>
+
+<p>動的リンクは実行ファイルのサイズ削減、共有ライブラリはメモリ消費量の削減に貢献する.</p>
+
+<p>PLT (Procedure Linkage Table)、GOT (Global Offset Table)、PIC (Position Independent Code)、遅延リンクなどは後日もう少し調べる.</p>
+
+<h1 id="参考文献">参考文献</h1>
+
+<ul>
+<li><a href="https://www.amazon.co.jp/dp/4798044784">ハロー“Hello,World&rdquo;OSと標準ライブラリのシゴトとしくみ</a>
+
+<ul>
+<li>C 言語の Hello World のプログラムの動的解析から始まり、Linux カーネルや glibc のソースコードを参照しながら低レイヤーの幅広いトピックに踏み込んでいく珍しい本. シェルの操作に引っかかっているとなかなか読み進められず&hellip;</li>
+</ul></li>
+</ul>
 
       </div>
     </div>

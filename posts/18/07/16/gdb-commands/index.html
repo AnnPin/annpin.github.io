@@ -460,23 +460,22 @@ Darcula color scheme from the JetBrains family of IDEs
   <div class="pure-u-1-24 pure-u-md-1-6"></div>
   <div class="pure-u-11-12 pure-u-md-2-3">
     <div class="post">
+      <p class="footnote">
+      
+      Created: <time class="">2018/07/16 07:47</time><br>
+      Last Update: <time class="">2018/07/30 04:45</time>
+      
+
+      
+      
+      
+
+      
+
+      
+      </p>
 
       <div class="post-title">
-        <p class="footnote">
-
-        
-        Created: <time class="">2018/07/16 07:47</time><br>
-        Last Update: <time class="">2018/07/18 08:16</time>
-        
-
-        
-        
-        
-
-        
-
-        
-        </p>
         <h1>gdb のコマンドメモ</h1>
       </div>
 
@@ -484,17 +483,37 @@ Darcula color scheme from the JetBrains family of IDEs
         
 
 <p>gdb (GNU Debugger) のコマンド、わりと毎回調べ直してる気がするのでとりあえずまとめとく.
-シェル内での操作は先頭に <code>$</code>、gdb 内での操作は先頭に <code>(gdb)</code> と付けているが、これらは実際に入力する必要はないので注意.</p>
+シェル内での操作は先頭に <code>$</code>、gdb 内での操作は先頭に <code>(gdb)</code> と付けているが、これらは実際に入力する必要はないので注意.
+なお、基本的にすべて 32 bit の Linux 環境での実行結果となる.</p>
 
 <h1 id="準備">準備</h1>
 
-<p>C プログラムを gdb でデバッグしたい場合、gcc などのコンパイラにデバッグフラグを渡してからそのファイルをコンパイルする.
+<p>C プログラムを gdb でデバッグしたい場合、gcc などのコンパイラにデバッグオプションを渡してからそのファイルをコンパイルする.
 <code>hello.c</code> を gcc でコンパイルするなら、以下のようにして <code>-g</code> フラグを渡してコンパイルする.</p>
 
 <pre><code class="language-bash">$ gcc -o hello hello.c -g -Wall
 </code></pre>
 
 <p><code>-Wall</code> フラグは警告を可能な限り多く表示するフラグ. とりあえず有効にしておいたほうが無難らしい.</p>
+
+<p>なお、実は <code>-g</code> オプションを付けずにコンパイルした実行ファイルを <code>gdb</code> でデバッグ (ブレークポイント設定やステップ実行) することも可能ではある.</p>
+
+<p><strong>ただし、実行ファイル中には &ldquo;各機械語命令が元となった C 言語ソースファイルのどの部分に対応するのか&rdquo; というシンボル情報が含まれなくなるため、C 言語ソースコードレベルのデバッグはできなくなる.</strong></p>
+
+<p>よってアセンブリコードレベルのデバッグだけが可能である.</p>
+
+<p>このため、C 言語ではなく全てアセンブリで書かれたコードをアセンブル・リンクして得られる実行ファイルも <code>gdb</code> を用いてデバッグすることができる.
+x64 アーキテクチャの Linux において <code>hello.asm</code> を nasm と ld を用いてアセンブル・リンクして実行ファイルを得るには、以下のコマンドを実行すれば良い.</p>
+
+<pre><code class="language-x86asm">$ nasm -o hello.o -f elf64 hello.asm
+$ ld -o hello hello.o
+</code></pre>
+
+<h4 id="補足">補足</h4>
+
+<p><a href="https://www.amazon.co.jp/dp/4798155039">低レベルプログラミング</a> では、gdb でデバッグする場合には (<code>-g</code> オプションではなく) <code>-ggdb</code> オプションが推奨されている.
+これは <code>.line</code> セクションやローカル変数のシンボルなどといった、gdb が利用できる情報が生成されるらしい.
+<code>man gcc</code> 中には <code>-ggdb</code> は &ldquo;可能な限り全ての GDB 拡張を含む&rdquo; と書かれているため、通常の <code>-g</code> よりも多くの情報を gdb 内から扱えるらしい. (未検証)</p>
 
 <h1 id="起動と終了">起動と終了</h1>
 
@@ -512,10 +531,19 @@ Darcula color scheme from the JetBrains family of IDEs
 <pre><code>(gdb) quit
 </code></pre>
 
-<p>実は <code>q</code> だけでも OK. gdb のコマンドははじめの 1 文字だけでも認識される.
+<p>実は <code>q</code> だけでも OK. 多くの gdb のコマンドははじめの 1 文字だけでも認識される.
 (すべてのコマンドがそうなのかは知らないけど&hellip;)</p>
 
 <pre><code>(gdb) q
+</code></pre>
+
+<p>TAB キーを押せば入力途中のコマンドを補完することもできる. したがって <code>q</code> とだけ入力した状態で TAB キーを押せば <code>quit</code> と補完されるはず.</p>
+
+<p>なお、先に gdb をシェルから起動させた後でから実行ファイルを読み込むこともでき、その場合には <code>file</code> を使用する.</p>
+
+<pre><code class="language-bash"># 以下は $ gdb -q hello と同じ.
+$ gdb -q
+(gdb) file hello
 </code></pre>
 
 <h1 id="実行">実行</h1>
@@ -526,6 +554,19 @@ Darcula color scheme from the JetBrains family of IDEs
 </code></pre>
 
 <pre><code>(gdb) r
+</code></pre>
+
+<p>なお、コマンドライン引数を渡したい場合には <code>run</code> の後に引数を続けて記述するか、<code>set args</code> コマンドで <code>run</code> の際の引数を設定しておくことができる.</p>
+
+<pre><code># run の後ろに直接引数を記述する.
+(gdb) run 1 2 3
+
+# あるいは予め set args コマンドで引数を設定してから run する.
+(gdb) set args 1 2 3
+(gdb) run
+
+# set args で設定した引数を解除したい場合には、単に set args と入力すれば良い.
+(gdb) set args
 </code></pre>
 
 <h1 id="関数の先頭にブレークポイントを設定する">関数の先頭にブレークポイントを設定する</h1>
@@ -620,7 +661,7 @@ Darcula color scheme from the JetBrains family of IDEs
 <p>これにより、例えば <code>main</code> 関数の先頭でブレークポイントで停止しているデバッグ状態が以下のように
 表示される.</p>
 
-<p><img src="/images/posts/18/07/16/gdb-layout-src.png" alt="gdb layout src" /></p>
+<p><img src="/images/posts/18/07/16/gdb-layout-src.png" alt="(gdb) layout src" /></p>
 
 <p>現在停止中の行が反転表示されていてわかりやすい. なお、左端の <code>B+</code> はブレークポイントのマークである.</p>
 
@@ -628,8 +669,7 @@ Darcula color scheme from the JetBrains family of IDEs
 ことができるデバッガの機能だ.</p>
 
 <p>gdb では <code>step</code> と <code>next</code> という 2 種類のステップ実行コマンドが使える. <code>step</code> は関数呼び出しの際に
-関数の内部に入っていくが、<code>next</code> はその関数呼び出しそのものを 1 命令とみなしてそのまま次の行に
-移る.</p>
+関数の内部に入っていく (ステップイン) が、<code>next</code> はその関数呼び出しそのものを 1 命令とみなしてそのまま次の行に移る (ステップオーバー).</p>
 
 <pre><code>(gdb) step
 </code></pre>
@@ -639,6 +679,11 @@ Darcula color scheme from the JetBrains family of IDEs
 
 <p>例えば上の図の場合、関数呼び出し <code>func()</code> の直前で停止している. この時に <code>next</code> を実行すると
 <code>func()</code> の終了後の行、すなわち 8 行目の <code>func2()</code> に移動する. (<code>step</code> では <code>func</code> 関数の内部まで入っていく.)</p>
+
+<p>関数呼び出しによって関数の内側に入った際、外側の関数に戻るには <code>step</code> および <code>next</code> でステップ実行していって <code>return</code> を実行する他に、<code>finish</code> を使用することで即座に現在の関数内の処理を実行して外側の関数に戻る (すなわちステップアウトする) ことができる.</p>
+
+<pre><code>(gdb) finish
+</code></pre>
 
 <hr />
 
@@ -650,14 +695,15 @@ Darcula color scheme from the JetBrains family of IDEs
 
 <p>上の図と同じ状態を <code>layout asm</code> で表示すると以下のようになる.</p>
 
-<p><img src="/images/posts/18/07/16/gdb-layout-asm.png" alt="gdb layout asm" /></p>
+<p><img src="/images/posts/18/07/16/gdb-layout-asm.png" alt="(gdb) layout asm" /></p>
 
-<p>Intel syntax ではなく AT&amp;T syntax なので (GNU 系列なので当然 <code>nasm</code> ではなく <code>as</code> で採用している記法が使われる)
+<p>Intel 構文ではなく AT&amp;T 構文なので (GNU 系列なので当然 <code>nasm</code> ではなく <code>as</code> で採用している記法が使われる)
 <code>mov</code> による代入の方向は 2nd arg -&gt; 1st arg ではなく、1st arg -&gt; 2nd arg の方向となるので注意.
 また、数値リテラルには <code>$</code>、レジスタ名には <code>%</code> が接頭辞として与えられるようである.
 すなわち、<code>mov $0x0, %eax</code> はレジスタ EAX に対して数値 0 を代入するという命令である.</p>
 
-<p>さらに、アセンブリレベルでのステップ実行のために <code>stepi</code> と <code>nexti</code> という命令が用意されている.</p>
+<p>さらに、アセンブリレベルでのステップ実行のために <code>stepi</code> と <code>nexti</code> という命令が用意されている.
+それぞれ、省略形は <code>si</code> および <code>ni</code> である.</p>
 
 <pre><code>(gdb) stepi
 </code></pre>
@@ -669,11 +715,18 @@ Darcula color scheme from the JetBrains family of IDEs
 
 <p>さらに、<code>layout regs</code> という現在のレジスタの状態を列挙してくれる機能もある. 超便利.</p>
 
-<p>なお、<code>layout src</code> や <code>layout asm</code> を使っている状態でプログラムの標準出力によって画面が崩れてしまった場合には、<code>Ctrl + l</code> で表示を直すことができるようになっている.</p>
+<pre><code>(gdb) layout regs
+</code></pre>
 
-<p><code>layout src</code> や <code>layout asm</code> による表示を終了したい場合には <code>Ctrl + x A</code> を押せばよいらしい.</p>
+<p><img src="/images/posts/18/07/16/gdb-layout-asm-regs.png" alt="(gdb) layout asm と (gdb) layout regs" /></p>
 
-<p>&hellip;が、<code>Ctrl + x</code> をメタキーとして受け付けてくれないときもあってちょっと困ってる.</p>
+<p>このように <code>layout</code> で複数のパネルが表示されている場合、<code>Ctrl-x</code> + <code>o</code> で選択中のパネルを切り替えることができ、カーソルキーの上と下で現在選択中のパネルの内容をスクロールすることができる.</p>
+
+<p>なお、<code>layout src</code> や <code>layout asm</code> を使っている状態でプログラムの標準出力によって画面が崩れてしまった場合には、<code>Ctrl-l</code> で表示を直すことができるようになっている.</p>
+
+<p><code>layout src</code> や <code>layout asm</code> による表示を終了したい場合には <code>Ctrl-x</code> + <code>a</code> を押せばよいらしい.</p>
+
+<p>たまに <code>Ctrl-x</code> をメタキーとして受け付けてくれないときもあってちょっと困ってる&hellip;</p>
 
 <h1 id="同じコマンドを繰り返し実行する">同じコマンドを繰り返し実行する</h1>
 
@@ -731,7 +784,12 @@ Darcula color scheme from the JetBrains family of IDEs
 <pre><code>(gdb) enable 1
 </code></pre>
 
-<h1 id="変数の中身の表示-c-言語編">変数の中身の表示 (C 言語編)</h1>
+<p>また、設定したすべてのブレークポイントを削除する場合には <code>delete breakpoints</code> を使用する.</p>
+
+<pre><code>(gdb) delete breakpoints
+</code></pre>
+
+<h1 id="簡単な変数の中身の確認-c-言語">簡単な変数の中身の確認 (C 言語)</h1>
 
 <p>gdb 上で変数の中身を表示することができる. 基本となるコマンドは <code>print</code> あるいは <code>p</code> である.</p>
 
@@ -756,53 +814,94 @@ Darcula color scheme from the JetBrains family of IDEs
 
 <p><code>display i</code> しておけば、<code>next</code> などによるステップ実行のたびに <code>i</code> の値が毎回表示されることになる.</p>
 
-<h1 id="変数の中身の表示-アセンブリ-編">変数の中身の表示 (アセンブリ 編)</h1>
+<h1 id="ウォッチポイントを置いて特定の変数が書き換えられた瞬間にブレークさせる">ウォッチポイントを置いて特定の変数が書き換えられた瞬間にブレークさせる</h1>
 
-<p>ここが本題な気がする&hellip;
-(あとで書きます)</p>
+<p>GDB のウォッチポイントという機能を使うことで、特定の変数の値が書き換えられた箇所でプログラムの動作をブレークさせることができる.
+ウォッチポイントの設定には <code>watch</code> を使用する.</p>
+
+<pre><code>(gdb) watch 変数名
+</code></pre>
+
+<h1 id="コールスタックの確認とフレームの切り替え">コールスタックの確認とフレームの切り替え</h1>
+
+<p>関数内部に設定したブレークポイントでプログラムが停止している際、その関数がどの関数から呼び出されているのかという関数呼び出しのスタック (コールスタック) を確認するためには、<code>where</code>、<code>backtrace</code>、<code>info stack</code> のいずれかのコマンドを使えば良い. (いずれもエイリアスとなっている)</p>
 
 <pre><code>(gdb) where
-(gdb) info registers
 
-# http://flex.phys.tohoku.ac.jp/texi/gdb-j/gdb-j_41.html
-(gdb) x/s $ecx
-(gdb) printf &quot;%s&quot;, $ecx
+(gdb) backtrace
 
-(gdb) x/16x $esp
-
-
-# なんか直前に x/? を実行した場合、? によって表示のされ方が変わるっぽい.
-# x/s だと単位がバイト単位になってしまって x/16x の単位もバイト単位になってしまうが
-# x/wx の後に x/16x とすると 4 バイト単位になって表示される.
-(gdb) x/s $ecx
-0xb7fff000:      &quot;Hello World! 1 /home/user/hello/hello\n&quot;
-(gdb) x/16x $esp
-0xbfffeec8:     0x92    0x3d    0x05    0x08    0x26    0x00    0x00    0x00
-0xbfffeed0:     0x71    0x76    0x06    0x08    0x01    0x00    0x00    0x00
-(gdb) x/wx $esp
-0xbfffeec8:     0x08053d92
-(gdb) x/16x $esp
-0xbfffeec8:     0x08053d92      0x00000026      0x08067671      0x00000001
-0xbfffeed8:     0xb7fff000      0x00000026      0x080d68c0      0x00000026
-0xbfffeee8:     0xb7fff000      0xbfffef14      0x0806819b      0x080d68c0
-0xbfffeef8:     0xb7fff000      0x00000026      0xbfffef34      0x08069732
-
-# 特定のアドレス内に含まれているアドレスを確認する.
-# アドレス 0x80d6750 に配置されたポインタ変数が参照している先 (アドレス) を表示する.
-(gdb) print/x *0x80d6750
-$1 = 0x110414
-(gdb) x/wx *0x80d6750
-0x110414 &lt;__kernel_vsyscall&gt;:   0x00c380cd
-
-#  指定したアドレスに格納されている機械語を逆アセンブルする.
-(gdb) disassemble 0x110414
-
-#  指定したアドレスに格納されている値を取り出し、その値をアドレスとして解釈した場合に
-#  そのアドレスに格納されている機械語を逆アセンブルする.
-#  以下の場合、0x80d6750 からの 4 バイト領域に 0x110414 が格納されていた場合には上の実行結果と
-#  同じとなる.
-(gdb) disassemble *0x80d6750
+(gdb) info stack
 </code></pre>
+
+<p>また、例えば特定の関数内部のブレークポイントで停止している際にその関数を呼び出している外側の関数内で定義された変数を確認したい場合には、<code>frame</code> コマンドを使用することで着目しているフレームの切り替えを行えば良い.</p>
+
+<p>例えば以下の例では <code>write()</code> 関数の内部でブレークしている状態で <code>main()</code> 関数の <code>argc</code> の値を確認しているが、<code>write()</code> 関数内で <code>print argc</code> を実行しても <code>No symbol &quot;argc&quot; in current context.</code> というエラーが発生している. したがって、<code>frame</code> コマンドを使ってフレームを <code>main()</code> 関数のフレームである 8 番 (フレーム番号は <code>where</code> などのコマンドの結果からわかる) へと切り替えることで <code>argc</code> の値を確認できるようにしている.</p>
+
+<pre><code>(gdb) where
+#0  write () at ../sysdeps/unix/syscall-template.S:81
+#1  0x08050f08 in _IO_new_file_write (f=0x80df1e0, data=&lt;value optimized out&gt;, n=44) at fileops.c:1251
+#2  0x08050bcc in new_do_write (fp=0x80df1e0,
+    data=0xb7fff000 &quot;Hello World! 1 /home/user/build/hello/hello\n&quot;, to_do=&lt;value optimized out&gt;)
+    at fileops.c:506
+#3  0x08050e95 in _IO_new_do_write (fp=0x80df1e0,
+    data=0xb7fff000 &quot;Hello World! 1 /home/user/build/hello/hello\n&quot;, to_do=44) at fileops.c:482
+#4  0x08051a3d in _IO_new_file_overflow (f=0x80df1e0, ch=-1) at fileops.c:839
+#5  0x08050d07 in _IO_new_file_xsputn (f=0x80df1e0, data=0x80be37e, n=1) at fileops.c:1319
+#6  0x0807ce8d in _IO_vfprintf_internal (s=0x80df1e0, format=&lt;value optimized out&gt;,
+    ap=0xbffff53c &quot;\210\201\004\b\030\361\r\b\210\201\004\b\270\365\377\277v\205\004\b\001&quot;)
+    at vfprintf.c:1673
+#7  0x0804deb1 in __printf (format=0x80be36c &quot;Hello World! %d %s\n&quot;) at printf.c:33
+#8  0x080483c2 in main (argc=1, argv=0xbffff5e4) at hello.c:5
+
+(gdb) print argc
+No symbol &quot;argc&quot; in current context.
+
+(gdb) frame 8
+#8  0x080483c2 in main (argc=1, argv=0xbffff5e4) at hello.c:5
+5         printf(&quot;Hello World! %d %s\n&quot;, argc, argv[0]);
+
+(gdb) print argc
+$1 = 1
+</code></pre>
+
+<h1 id="各レジスタの値の一括表示">各レジスタの値の一括表示</h1>
+
+<p>アセンブリコードのデバッグを行っている際、<code>info registers</code> コマンドで各レジスタ中の値を一括表示することができる.</p>
+
+<pre><code>(gdb) info registers
+</code></pre>
+
+<h1 id="指定した関数の命令を逆アセンブルする">指定した関数の命令を逆アセンブルする</h1>
+
+<p>指定した関数の処理内容を逆アセンブルするには <code>disassemble</code> コマンドが使用できる.
+例えば <code>main()</code> 関数の内容を逆アセンブルする場合は以下のように書けばよい.</p>
+
+<pre><code>(gdb) disassemble main
+</code></pre>
+
+<p>また、関数の指定はその関数のアドレスで行うこともでき、例えば <code>main()</code> 関数が <code>0x80482bc</code> というアドレスに存在する場合には以下のように書くこともできる.</p>
+
+<pre><code>(gdb) disassemble 0x80482bc
+</code></pre>
+
+<p>なお、<code>layout asm</code> によるアセンブリコードの表示中に <code>disassemble</code> コマンドを実行すると、<code>layout asm</code> によるアセンブリコードの表示が <code>disassemble</code> コマンドで指定した関数のものに変更される.</p>
+
+<h1 id="layout-asm-によるアセンブリコード表示の構文を変更する">layout asm によるアセンブリコード表示の構文を変更する</h1>
+
+<p><code>layout asm</code> を実行した場合、デフォルトではアセンブリコードは <code>as</code> で採用されている AT&amp;T 構文で表示される.
+これを <code>nasm</code> などで採用されている Intel 構文で表示するようにするには、以下のコマンドを実行すればよい.</p>
+
+<pre><code>(gdb) set disassembly-flavor intel
+</code></pre>
+
+<p>すでに <code>layout asm</code> でコードを表示している状態でこのコマンドを実行した場合、一度他の関数内に入るなどして表示が更新されないと反映されないため注意すること.</p>
+
+<p>なお、AT&amp;T 構文に戻したい場合には以下のコマンドを実行すれば良い.</p>
+
+<pre><code>(gdb) set disassembly-flavor att
+</code></pre>
+
+<p>このような設定を毎回入力するのは手間であるので、設定ファイル <code>~/.gdbinit</code> を作成しておきその中にこれらの設定を記述しておくとよい.</p>
 
 <h1 id="コアダンプを解析する">コアダンプを解析する</h1>
 
@@ -813,6 +912,763 @@ $1 = 0x110414
 
 <p>この状態で <code>where</code> を実行すれば停止した箇所のスタックトレースが確認できるほか、<code>layout asm</code>
 を実行することで実行停止した命令を確認することができる.</p>
+
+<h1 id="高度な変数の中身の確認-c-言語-アセンブリ">高度な変数の中身の確認 (C 言語 / アセンブリ)</h1>
+
+<p>もう少し細かい値表示のコマンドについて.</p>
+
+<p>まず、値の表示には <code>print</code> (省略名は <code>p</code>) と <code>x</code> という 2 種類のコマンドが使える.
+これらのコマンドは、<code>print</code> には表示したい値そのものを渡し、<code>x</code> には表示したい値のアドレスを渡すという違いがある.</p>
+
+<pre><code>print /FMT &lt;val&gt; : レジスタまたはメモリの値を参照できる. レジスタ名は先頭に $ をつけて $eax のようにする.
+
+x /FMT &lt;address&gt; : print と同様に値のチェックに使えるが、ポインタを受け取る点が異なる.
+
+(FMT にはフォーマットを指定する. 後述.)
+</code></pre>
+
+<p>例えば、<code>/home/user/hello/hello abc def</code> のようにして実行ファイル <code>hello</code> を実行したとする.</p>
+
+<p><code>argc</code> の値を表示したい場合には <code>print</code> および <code>x</code> を用いてそれぞれ以下のように書くことができ、どちらの結果からも <code>argc</code> に 3 が入っていることを確認できる.
+なお、変数のアドレスを得るには C 言語と同様に <code>&amp;</code> を変数名の前に付与すればよい.</p>
+
+<pre><code>(gdb) print argc
+$1 = 3
+
+(gdb) x &amp;argc
+0xbffff550:     0x00000003
+</code></pre>
+
+<p>また、参照先のアドレスからその中の値を得るにはやはり C 言語と同様に <code>*</code> を変数名の前に付与すればよいので、以下のように書けば <code>argc</code> のアドレスを得た後に、そのアドレスの中身を確認することになり、<code>print argc</code> と書いた場合と全く同じ結果が得られる.</p>
+
+<pre><code>(gdb) print *(&amp;argc)
+$2 = 3
+</code></pre>
+
+<p>なお、<code>print</code> や <code>x</code> には表示の仕方をフォーマット指定することができるようになっており、コマンド名と表示したい値やアドレスの間に <code>/</code> から始まるフォーマット文字列を書くことができる.</p>
+
+<p>例えば、<code>print</code> コマンドで <code>argv[0]</code> をフォーマットを指定して表示するには以下のようにする.</p>
+
+<pre><code>(gdb) print argv[0]
+$1 = 0xbffff732 &quot;/home/user/hello/hello&quot;
+
+# アドレスとして表示したい場合.
+(gdb) print /a argv[0]
+$2 = 0xbffff732
+
+# 文字列として表示したい場合.
+(gdb) print /s argv[0]
+$3 = 0xbffff732 &quot;/home/user/hello/hello&quot;
+
+# 文字として表示したい場合.
+(gdb) print /c argv[0]
+$4 = 50 '2'
+</code></pre>
+
+<p>ここで <code>/c</code> を指定した場合には結果が <code>'2'</code> という 1 文字となっているが、これは <code>argv[0]</code> の値、すなわちポインタ配列 <code>argv</code> の 0 番目に格納されている「<code>&quot;/home/user/hello/hello&quot;</code> という文字列の先頭のアドレス <code>0xbffff732</code>」を <code>char</code> 型の値として見なそうとした結果が 50 （16 進数では 0x32) となり、この数値に対応する文字が <code>'2'</code> となることを示している. すなわち、<code>char ch = 0xbffff732;</code> という代入処理をしたあとに <code>ch</code> の値を調べていることに相当する.</p>
+
+<p><code>print</code> コマンドで使われるフォーマット文字には以下のようなものがある.</p>
+
+<table>
+<thead>
+<tr>
+<th>フォーマット文字</th>
+<th>効果</th>
+<th>使用例</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>o</td>
+<td>8 進数表示</td>
+<td><code>print /o 8          # =&gt; 010</code></td>
+</tr>
+
+<tr>
+<td>x</td>
+<td>16 進数表示</td>
+<td><code>print /x 16         # =&gt; 0x10</code></td>
+</tr>
+
+<tr>
+<td>u</td>
+<td>符号なし 10 進数表示</td>
+<td><code>print /u -1         # =&gt; 4294967295</code></td>
+</tr>
+
+<tr>
+<td>t</td>
+<td>2 進数表示</td>
+<td><code>print /t 127        # =&gt; 1111111</code></td>
+</tr>
+
+<tr>
+<td>f</td>
+<td>浮動小数点数表示</td>
+<td><code>print /f 0x40000000 # =&gt; 2</code></td>
+</tr>
+
+<tr>
+<td>a</td>
+<td>アドレス表示</td>
+<td><code>print /a argv       # =&gt; 0xbffff5f4</code></td>
+</tr>
+
+<tr>
+<td>c</td>
+<td>文字表示</td>
+<td><code>print /c 65         # =&gt; 65 'A'</code></td>
+</tr>
+
+<tr>
+<td>s</td>
+<td>文字列表示</td>
+<td><code>print /s argv[1]    # =&gt; 0xbffff749 &quot;abc&quot;</code></td>
+</tr>
+</tbody>
+</table>
+
+<p><code>x</code> コマンドも <code>print</code> コマンドと同様に <code>/</code> から始まるフォーマット文字列の指定が可能となっているが、<code>x</code> コマンドでのフォーマット指定では <code>print</code> コマンドにはなかったサイズ修飾子 (size modifier) も指定できるようになっている.</p>
+
+<p>これはアドレスを直接扱ったり、アセンブリコードのデバッグを行うようになると非常に重要となってくる.
+例えば、<code>print argv[0]</code> の結果は以下のようになっていた.</p>
+
+<pre><code>(gdb) print argv[0]
+$1 = 0xbffff732 &quot;/home/user/hello/hello&quot;
+</code></pre>
+
+<p>この結果から、コマンドライン引数として渡した <code>&quot;/home/user/hello/hello&quot;</code> という文字列の先頭アドレスが <code>0xbffff732</code> であることがわかる.
+C 言語でこのアドレス <code>argv[0]</code> のデリファレンスを行う場合、<code>*argv[0]</code> と書くのであった.
+文字列配列の先頭アドレスの中にはその文字列の最初の文字が格納されていたので、以下のような結果が得られる.</p>
+
+<pre><code>(gdb) print *argv[0]
+$5 = 47 '/'
+</code></pre>
+
+<p>コマンドライン引数 <code>&quot;/home/user/hello/hello&quot;</code> の最初の文字 <code>/</code> が得られている.</p>
+
+<p>さて、今 <code>argv[0]</code> の値は <code>0xbffff732</code> であるとわかっているのであるから、このアドレスを使って <code>*0xbffff732</code> とデリファレンスを行っても同様の結果が得られそうに思える. 試してみよう.</p>
+
+<pre><code>(gdb) print *0xbffff732
+$6 = 1836017711
+
+(gdb) print /c *0xbffff732
+$7 = 47 '/'
+</code></pre>
+
+<p>すると、<code>/c</code> というフォーマット指定を行わないと正しく結果が表示できていないことがわかる. <code>print *argv[0]</code> としたときには正しく表示できたのに <code>print *0xbffff732</code> というフォーマット指定が必須となるようだ.</p>
+
+<p>なぜだろうか. これは、0xbffff732 というアドレス情報だけではそのアドレスの値の表示はできず、<strong>その値が保存されているメモリ領域の大きさまで分からないと値を正しく表示できない</strong> ということを示している.</p>
+
+<p>C 言語のデバッグで値を確認する場合、<strong>各変数にはその変数の型が定まっている</strong>. したがって、<code>argv[0]</code> と書いた場合にはその値である参照先のアドレスが 0xbffff732 であるという情報以外に、<code>argv[0]</code> の型が <code>char *</code> 型であるという情報から、参照先が <code>char</code> 型であるということがわかっている.
+そして <code>char</code> 型は 1 byte であるというメモリ領域の大きさの情報がわかっていることから、<code>print *argv[0]</code> だけで <code>argv[0]</code> が参照している文字列の先頭文字を表示することができる.</p>
+
+<p>これに対し、<code>print *0xbffff732</code> だけではアドレスは分かってもそのメモリ領域の大きさが 1 byte なのか 4 byte なのかあるいは 8 byte なのか全くわからない.
+<code>print *0xbffff732</code> の結果が <code>1836017711</code> となっているが、恐らくこれは 32 bit マシンの標準サイズである <code>DWORD</code>、すなわち 4 byte と解釈するのがデフォルトとなっていることによるものであろう.
+この <code>1836017711</code> という 10 進数値を 16 進数値に変換してみると <code>0x6d6f682f</code> となる. これを 1 byte データの列とみなせば、<code>0x6d</code>、<code>0x6f</code>、<code>0x68</code>、<code>0x2f</code> となる. アスキーコード表を参照してみると、<code>0x6d</code> は <code>'m'</code>、<code>0x6f</code> は <code>'o'</code>、<code>0x68</code> は <code>'h'</code>、<code>0x2f</code> は <code>'/'</code> にそれぞれ対応することがわかる.
+ということは、<code>0xbffff732</code> というアドレスから <code>'m', 'o', 'h', '/'</code>、という文字列が順番に並んでいるのであろうか &hellip;というとそうではない.
+これは Intel 系の CPU がメモリ上では数値をリトルエンディアンで管理していることによるものであり、本来は <code>0xbffff732</code> というアドレスから <code>'/', 'h', 'o', 'm'</code> という順で文字が並んでいるのだが、これを <code>0x2f, 0x68, 0x6f, 0x6d</code> という 4 byte のバイナリ列からなる数値として CPU が認識すると、CPU はこれを <code>0x6d, 0x6f, 0x68, 0x2f</code> すなわち <code>0x6d6f682f</code> という数値を表していると解釈するためである.</p>
+
+<p>混乱するが、とにかく <code>0xbffff732</code> というアドレスの 1 byte 領域には <code>0x2f</code> すなわち <code>'/'</code> という文字が格納されていることは確かであるため、<code>print /c *0xbffff732</code> のようにフォーマットを指定してメモリ領域の大きさを決定することで適切に表示することができるわけである.</p>
+
+<p>文字の場合には <code>char</code> 型が 1 byte であるので <code>print</code> でもうまく表示できるが、では 2 byte の <code>short</code> 型の値が特定のメモリアドレスにあるということがわかっているような場合はどのようなフォーマットを指定したらよいだろうか？</p>
+
+<p>このように適切なフォーマット指定が難しくなるような場合は <code>print</code> よりも <code>x</code> でサイズ修飾子を指定するほうが便利だろう.</p>
+
+<pre><code>(gdb) x /b 0xbffff732
+0xbffff732:     0x2f
+
+(gdb) x /cb 0xbffff732
+0xbffff732:     47 '/'
+</code></pre>
+
+<p>最初に <code>/b</code> という指定を行っているが、これは 1 byteを意味するサイズ修飾子である.
+したがって、<code>x /b 0xbffff732</code> で <code>0xbffff732</code> というアドレスに格納されている 1 byte のデータを表示できる.</p>
+
+<p>この場合には結果は <code>0x2f</code> という 16 進数値となっているが、これをアスキーコードと解釈して対応する文字を表示したい場合にはフォーマット指定文字 <code>c</code> を加えて <code>/cb</code> と書けばよい. これにより、<code>0xbffff732</code> に格納されている 1 byte の値を文字として解釈することになり、<code>'/'</code> という文字が表示される.</p>
+
+<p>なお、<code>x</code> でのフォーマットやサイズの指定は本来は <code>/cb</code> のように組み合わせて使うことになるはずだが、<code>/c</code> や <code>/b</code> のように片方のみ、あるいは全く指定せずに単に <code>x 0xbffff732</code> のようにして実行することもできる.
+その場合のフォーマットやサイズの指定は直前に行ったフォーマット指定やサイズ指定をそのまま使い回すようであるので、<code>x /cb 0xbffff732</code> を実行した後に <code>x /b 0xbffff732</code> や <code>x 0xbffff732</code> を実行しても <code>x /cb 0xbffff732</code> を実行した場合と同様のフォーマットで結果が表示される.</p>
+
+<p><code>x</code> コマンドで使われるサイズ修飾子には以下のようなものがある.</p>
+
+<table>
+<thead>
+<tr>
+<th>サイズ修飾子</th>
+<th>サイズ</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>b</td>
+<td>1 バイト</td>
+</tr>
+
+<tr>
+<td>h</td>
+<td>ハーフワード (2 バイト)</td>
+</tr>
+
+<tr>
+<td>w</td>
+<td>ワード (4 バイト)</td>
+</tr>
+
+<tr>
+<td>g</td>
+<td>ジャイアントワード (8 バイト)</td>
+</tr>
+</tbody>
+</table>
+
+<p>また、<code>x</code> コマンドで使われるフォーマット文字には以下のようなものがある.</p>
+
+<table>
+<thead>
+<tr>
+<th>フォーマット文字</th>
+<th>効果</th>
+<th>使用例</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>o</td>
+<td>8 進数表示</td>
+<td><code>x /ob 0xbffff732 # =&gt; 057</code></td>
+</tr>
+
+<tr>
+<td>x</td>
+<td>16 進数表示</td>
+<td><code>x /xb 0xbffff732 # =&gt; 0x2f</code></td>
+</tr>
+
+<tr>
+<td>d</td>
+<td>10 進数表示</td>
+<td><code>x /db 0xbffff732 # =&gt; 47</code></td>
+</tr>
+
+<tr>
+<td>u</td>
+<td>符号なし 10 進数表示</td>
+<td><code>x /uh 0xbffff732 # =&gt; 26671</code></td>
+</tr>
+
+<tr>
+<td>t</td>
+<td>2 進数表示</td>
+<td><code>x /th 0xbffff732 # =&gt; 0110100000101111</code></td>
+</tr>
+
+<tr>
+<td>f</td>
+<td>浮動小数点数表示</td>
+<td><code>x /fw 0xbffff732 # =&gt; 4.63080422e+27</code></td>
+</tr>
+
+<tr>
+<td>a</td>
+<td>アドレス表示</td>
+<td><code>x /aw 0xbffff732 # =&gt; 0x6d6f682f</code></td>
+</tr>
+
+<tr>
+<td>c</td>
+<td>文字表示</td>
+<td><code>x /cw 0xbffff732 # =&gt; 47 '/'</code></td>
+</tr>
+
+<tr>
+<td>s</td>
+<td>文字列表示</td>
+<td><code>x /sb 0xbffff732 # =&gt; &quot;/home/user/hello/hello&quot;</code></td>
+</tr>
+
+<tr>
+<td>i</td>
+<td>命令列表示</td>
+<td><code>x /ib 0x80482e8  # =&gt; &lt;main+44&gt;: ret</code></td>
+</tr>
+</tbody>
+</table>
+
+<p>フォーマット文字列 <code>i</code> は指定したメモリアドレスに格納されている内容を命令として解釈した内容を表示する.
+例えば、<code>0x80482e9</code> というアドレスに <code>0x90</code> という値が保存されているとすると、<code>x /ib</code> を使用することで x86 で <code>0x90</code> という数値に割り当てられている命令である <code>nop</code> を表示することができる.</p>
+
+<pre><code>(gdb) x /xb 0x80482e9
+0x80482e9:      0x90
+
+(gdb) x /ib 0x80482e9
+   0x80482e9:   nop
+</code></pre>
+
+<p>なお、<code>print</code> や <code>x</code> でレジスタの値やレジスタが参照している内容を表示する場合には、レジスタの名前の先頭に <code>$</code> を付与することでレジスタを指定する.</p>
+
+<p>例えば、EAX レジスタの中身を確認する場合には以下のように書けばよい.</p>
+
+<pre><code>(gdb) print $eax
+$8 = 4
+
+(gdb) print /x $eax
+$9 = 0x4
+</code></pre>
+
+<p>また、ECX レジスタが文字列の先頭アドレスを格納している場合、以下のようにしてその値と文字列を確認できる.
+<code>/s</code> だけでは正しく表示されない場合は <code>x</code> コマンドのサイズ指定が正しく設定されていない状態となっているため、サイズ修飾子 <code>b</code> を使って <code>/sb</code> と指定する必要がある.</p>
+
+<pre><code>(gdb) x /s $ecx
+0xb7fff000:      &quot;Hello World! 3 /home/user/hello/hello\n&quot;
+
+(gdb) x /sb $ecx
+0xb7fff000:      &quot;Hello World! 3 /home/user/hello/hello\n&quot;
+</code></pre>
+
+<p>これにより、ECX レジスタの値は <code>0xb7fff000</code> であり、そのアドレスからスタートする文字列が表示される.</p>
+
+<p>同様にしてスタックポインタ ESP の値を確認することもできる.
+スタックポインタの値は 32 bit マシンでは 4 byte の大きさとなっているはずなので、正しく表示されない場合にはサイズ修飾子 <code>w</code> を使って 4 byte ずつ表示するように認識させる必要がある.</p>
+
+<pre><code>(gdb) x $esp
+0xbfffeeb8:     0x92
+
+(gdb) x /xw $esp
+0xbfffeeb8:     0x08053d92
+</code></pre>
+
+<p>これによってスタックポインタ ESP の値は <code>0xbfffeeb8</code> であり、そこから 4 byte の領域に <code>0x08053d92</code> という値が保存されているということが分かった.</p>
+
+<p>また、関数への引数がスタック経由で渡される場合、スタック上の複数の値を一気に表示できると便利である.
+その場合には <code>/</code> の直後に表示したい値の個数を書くことで、その個数分だけ連続して値を表示することができる.</p>
+
+<p>以下の場合、スタックポインタ ESP の値である <code>0xbfffeeb8</code> から 4 byte ずつ 16 個、すなわち <code>0xbfffeef7</code> までのメモリ領域の値を表示している.</p>
+
+<pre><code>(gdb) x /16xw $esp
+0xbfffeeb8:     0x08053d92      0x00000026      0x08067671      0x00000001
+0xbfffeec8:     0xb7fff000      0x00000026      0x080d68c0      0x00000026
+0xbfffeed8:     0xb7fff000      0xbfffef04      0x0806819b      0x080d68c0
+0xbfffeee8:     0xb7fff000      0x00000026      0xbfffef24      0x08069732
+</code></pre>
+
+<p><code>print</code> と <code>x</code> については以下の URL にわかりやすくまとまっている.</p>
+
+<ul>
+<li><a href="http://visualgdb.com/gdbreference/commands/print">http://visualgdb.com/gdbreference/commands/print</a></li>
+<li><a href="http://visualgdb.com/gdbreference/commands/x">http://visualgdb.com/gdbreference/commands/x</a></li>
+</ul>
+
+<h2 id="例題-1-特定のアドレスに格納された-関数のアドレス-から参照先の関数を知る">例題 1: 特定のアドレスに格納された &ldquo;関数のアドレス&rdquo; から参照先の関数を知る</h2>
+
+<p><a href="https://www.amazon.co.jp/dp/4798044784">ハロー“Hello,World&rdquo;OSと標準ライブラリのシゴトとしくみ</a> の 2 章では <code>printf()</code> の処理を gdb を使って辿っていく.
+その中で、<code>write()</code> システムコールラッパー内から実際に <code>int $0x80</code> というソフトウェア割り込みを生じる関数へとジャンプする <code>call *0x80d6750</code> という処理が出てくる.</p>
+
+<pre><code>   ┌──────────────────────────────────────────────────────────────────────┐
+   │0x8053d70 &lt;write&gt;               cmpl   $0x0,%gs:0xc                   │
+   │0x8053d78 &lt;write+8&gt;             jne    0x8053d9f &lt;write+47&gt;           │
+   │0x8053d7a &lt;__write_nocancel&gt;    push   %ebx                           │
+   │0x8053d7b &lt;__write_nocancel+1&gt;  mov    0x10(%esp),%edx                │
+   │0x8053d7f &lt;__write_nocancel+5&gt;  mov    0xc(%esp),%ecx                 │
+   │0x8053d83 &lt;__write_nocancel+9&gt;  mov    0x8(%esp),%ebx                 │
+   │0x8053d87 &lt;__write_nocancel+13&gt; mov    $0x4,%eax                      │
+  &gt;│0x8053d8c &lt;__write_nocancel+18&gt; call   *0x80d6750                     │
+   │0x8053d92 &lt;__write_nocancel+24&gt; pop    %ebx                           │
+   │0x8053d93 &lt;__write_nocancel+25&gt; cmp    $0xfffff001,%eax               │
+   │0x8053d98 &lt;__write_nocancel+30&gt; jae    0x8056650 &lt;__syscall_error&gt;    │
+   │0x8053d9e &lt;__write_nocancel+36&gt; ret                                   │
+</code></pre>
+
+<p>この処理について考えてみる. まず、<code>0x80d6750</code> というアドレスの中に格納されている値について調べてみる.
+<code>call</code> 命令の引数になっているので、32 bit のジャンプ先アドレスが格納されていると考えられる.
+すなわち、<code>0x80d6750</code> から 4 byte の領域は関数ポインタ変数に相当するはずである.</p>
+
+<pre><code>(gdb) print /x *0x80d6750
+$10 = 0x110414
+</code></pre>
+
+<p>すると、<code>0x80d6750</code> というアドレスには <code>0x110414</code> という 4 byte の数値が格納されていることがわかる.</p>
+
+<p><code>x</code> コマンドでも確認してみよう.</p>
+
+<pre><code>(gdb) x /xw 0x80d6750
+0x80d6750 &lt;_dl_sysinfo&gt;:        0x00110414
+</code></pre>
+
+<p><code>x</code> コマンドでも <code>0x00110414</code>、すなわち <code>0x110414</code> という同じ結果が得られた.
+<code>x</code> コマンドの結果を見てみると、どうやら <code>0x80d6750</code> というアドレスには <code>_dl_sysinfo</code> というラベルが設定されているらしい.</p>
+
+<p>では、<code>0x110414</code> というアドレスはどのようなアドレスとなっているのだろうか.</p>
+
+<pre><code>(gdb) x /xw *0x80d6750
+0x110414 &lt;__kernel_vsyscall&gt;:   0x00c380cd
+
+(gdb) x /xw _dl_sysinfo
+0x110414 &lt;__kernel_vsyscall&gt;:   0x00c380cd
+</code></pre>
+
+<p><code>0x110414</code> というアドレスには <code>__kernel_vsyscall</code> というラベルが設定されているということがわかった.</p>
+
+<p>これにより、<code>call *0x80d6750</code> という命令によって <code>__kernel_vsyscall</code> 内へとジャンプすることがわかる.
+実際、ステップ実行してみると確かにこの命令によって <code>__kernel_vsyscall</code> へとジャンプすることを確認できる.</p>
+
+<pre><code>   ┌──────────────────────────────────────────────────────────────────────┐
+  &gt;│0x110414 &lt;__kernel_vsyscall&gt;    int    $0x80                          │
+   │0x110416 &lt;__kernel_vsyscall+2&gt;  ret                                   │
+</code></pre>
+
+<p>さらに、<code>disassemble</code> コマンドを使えば <code>0x110414</code> というアドレスに書かれている命令を逆アセンブルして確かめることもできる.</p>
+
+<pre><code>(gdb) disassemble 0x110414
+Dump of assembler code for function __kernel_vsyscall:
+=&gt; 0x00110414 &lt;+0&gt;:     int    $0x80
+   0x00110416 &lt;+2&gt;:     ret
+End of assembler dump.
+</code></pre>
+
+<p>したがって、確かに <code>0x110414</code> というアドレスは <code>__kernel_vsyscall</code> というラベルを指しており、その中で <code>int $0x80</code> によるソフトウェア割り込みが実行されていることがわかる.</p>
+
+<p><code>disassemble</code> コマンドに対して <code>*0x80d6750</code> を渡しても同様の結果が表示される.</p>
+
+<pre><code>(gdb) disassemble *0x80d6750
+Dump of assembler code for function __kernel_vsyscall:
+=&gt; 0x00110414 &lt;+0&gt;:     int    $0x80
+   0x00110416 &lt;+2&gt;:     ret
+End of assembler dump.
+</code></pre>
+
+<h2 id="例題-2-コマンドライン引数-argv-周りのメモリを調べる">例題 2: コマンドライン引数 argv 周りのメモリを調べる</h2>
+
+<p>コマンドライン引数 <code>argv</code> 周りのメモリの参照関係を調べてみる.
+ここでも、<code>/home/user/hello/hello abc def</code> のようにして実行ファイル <code>hello</code> を実行した場合を考えている.</p>
+
+<p>まず、<code>argv[0]</code>、<code>argv[1]</code>、<code>argv[2]</code> の値をアドレスとして表示してみる.</p>
+
+<pre><code>(gdb) print /a argv[0]
+$11 = 0xbffff732
+(gdb) print /a argv[1]
+$12 = 0xbffff749
+(gdb) print /a argv[2]
+$13 = 0xbffff74d
+</code></pre>
+
+<p>さらに、<code>argv[0]</code>、<code>argv[1]</code>、<code>argv[2]</code> によって参照されているそれぞれの文字列中の各文字のアドレスも確認してみる.</p>
+
+<pre><code># argv[0] は文字列 &quot;/home/user/hello/hello&quot; を参照している.
+(gdb) print argv[0][0]
+$14 = 47 '/'
+(gdb) print /a &amp;argv[0][0]
+$15 = 0xbffff732
+
+(gdb) print argv[0][1]
+$16 = 104 'h'
+(gdb) print /a &amp;argv[0][1]
+$17 = 0xbffff733
+
+(gdb) print argv[0][2]
+$18 = 111 'o'
+(gdb) print /a &amp;argv[0][2]
+$19 = 0xbffff734
+
+(gdb) print argv[0][3]
+$20 = 109 'm'
+(gdb) print /a &amp;argv[0][3]
+$21 = 0xbffff735
+
+# argv[1] は文字列 &quot;abc&quot; を参照している.
+(gdb) print argv[1][0]
+$22 = 97 'a'
+(gdb) print /a &amp;argv[1][0]
+$23 = 0xbffff749
+
+(gdb) print argv[1][1]
+$24 = 98 'b'
+(gdb) print /a &amp;argv[1][1]
+$25 = 0xbffff74a
+
+# argv[2] は文字列 &quot;def&quot; を参照している.
+(gdb) print argv[2][0]
+$26 = 100 'd'
+(gdb) print /a &amp;argv[2][0]
+$27 = 0xbffff74d
+
+(gdb) print argv[2][1]
+$28 = 101 'e'
+(gdb) print /a &amp;argv[2][1]
+$29 = 0xbffff74e
+</code></pre>
+
+<p>確かにコマンドライン引数 1 文字 1 文字がどのアドレスに格納されているかを表示できている.</p>
+
+<p>次に文字列へのポインタの配列 <code>argv</code> のアドレスについて調べてみる. アドレスを表示するだけではわからないので、<code>*</code> を付与してデリファレンスした結果がきちんとそれぞれのコマンドライン引数文字列の先頭アドレスになっているかを確認する.</p>
+
+<pre><code>(gdb) print argv
+$30 = (char **) 0xbffff5f4
+(gdb) print *argv
+$31 = 0xbffff732 &quot;/home/user/hello/hello&quot;
+
+(gdb) print argv+1
+$32 = (char **) 0xbffff5f8
+(gdb) print *(argv+1)
+$33 = 0xbffff749 &quot;abc&quot;
+
+(gdb) print argv+2
+$34 = (char **) 0xbffff5fc
+(gdb) print *(argv+2)
+$35 = 0xbffff74d &quot;def&quot;
+</code></pre>
+
+<p>ここまでをまとめて図示すると以下のようになるだろうか.</p>
+
+<pre><code>         Addr.       Addr.              Addr.        Addr.       Addr.       Addr.
+         0xbffff732  0xbffff734         0xbffff740   0xbffff748  0xbffff749  0xbffff74d
+              |       |                   |           |            |           |
+              |   +---+                   |           +----+ +-----+  +--------+
+              |   |                       |                | |        |
+              v   v                       v                v v        v
+             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+--+-+-+-+--+-+-+-+--+
+             |/|h|o|m|e|/|u|s|e|r|/|h|e|l|l|o|/|h|e|l|l|o|\0|a|b|c|\0|d|e|f|\0|
+             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+--+-+-+-+--+-+-+-+--+
+              ^ ^   ^                                        ^        ^
+              | |   |                                        |        |
+              | |   +------------+                           |        |
+              | +-------+        |                           |        |
+              |         |        |                           |        |
+              |     Addr.       Addr.                        |        |
+              |     0xbffff733  0xbffff735                   |        |
+              |                                              |        |
+              |                                              |        |
+              |                                              |        |
+              |              +-------------------------------+        |
+              |              |                                        |
+              +-+            |            +---------------------------+
+                |            |            |
+          +-----|------+-----|------+-----|------+
+          |            |            |            |
+argv ----&gt;| 0xbffff732 | 0xbffff749 | 0xbffff74d |
+          |            |            |            |
+          +------------+------------+------------+
+              ^            ^            ^
+              |            |            |
+            Addr.        Addr.        Addr.
+            0xbffff5f4   0xbffff5f8   0xbffff5fc
+</code></pre>
+
+<p>すると、3 つのコマンドライン引数はすべて連続したメモリ領域に置かれているということがわかる.
+また、ポインタ配列 <code>argv</code> はそこから大体 <code>0x200</code> byte 程度離れたところにあるようだ.</p>
+
+<p>続けて、スタックとの関係を調べよう.</p>
+
+<p>まず、このプログラムの元々のソースコードは以下のようになっていたとする.</p>
+
+<pre><code class="language-c">#include &lt;stdio.h&gt;
+
+int main(int argc, char *argv[]) {
+    printf(&quot;Hello World! %d %s\n&quot;, argc, argv[0]);
+    return 0;
+}
+</code></pre>
+
+<p>そして、このプログラムの <code>main()</code> 関数の処理が以下のようなアセンブリコードに変換されていたとする.
+そして、<code>printf()</code> 関数への <code>call</code> 命令へのジャンプが行われる直前のスタックの状態を考える.</p>
+
+<pre><code>   ┌──────────────────────────────────────────────────────────────────────┐
+   │0x80482bc &lt;main&gt;                        push   %ebp                   │
+   │0x80482bd &lt;main+1&gt;                      mov    %esp,%ebp              │
+   │0x80482bf &lt;main+3&gt;                      and    $0xfffffff0,%esp       │
+   │0x80482c2 &lt;main+6&gt;                      sub    $0x10,%esp             │
+   │0x80482c5 &lt;main+9&gt;                      mov    0xc(%ebp),%eax         │
+   │0x80482c8 &lt;main+12&gt;                     mov    (%eax),%edx            │
+   │0x80482ca &lt;main+14&gt;                     mov    $0x80b360c,%eax        │
+   │0x80482cf &lt;main+19&gt;                     mov    %edx,0x8(%esp)         │
+   │0x80482d3 &lt;main+23&gt;                     mov    0x8(%ebp),%edx         │
+   │0x80482d6 &lt;main+26&gt;                     mov    %edx,0x4(%esp)         │
+   │0x80482da &lt;main+30&gt;                     mov    %eax,(%esp)            │
+   │0x80482dd &lt;main+33&gt;                     call   0x8049360 &lt;printf&gt;     │
+   │0x80482e2 &lt;main+38&gt;                     mov    $0x0,%eax              │
+   │0x80482e7 &lt;main+43&gt;                     leave                         │
+   │0x80482e8 &lt;main+44&gt;                     ret                           │
+</code></pre>
+
+<p>すると、<code>printf()</code> 関数への引数の準備の仕方から、<code>0x4(%esp)</code> すなわち <code>$esp + 0x4</code> から 4 byte の領域に <code>argc</code> の値、<code>0x8(%esp)</code> すなわち <code>$esp + 0x8</code> から 4 byte の領域に <code>argv[0]</code> の値が保存されていることがわかる.</p>
+
+<p>ここから、このアセンブリコードを逆に読んでいくと、<code>argc</code> は元々は <code>0x8(%ebp)</code> すなわち <code>$ebp + 0x8</code> から 4 byte の領域に、<code>argv</code> は <code>0xc(%ebp)</code> すなわち <code>$ebp + 0xc</code> から 4 byte の領域に保存されていたことがわかる.</p>
+
+<p>また、<code>$ebp</code> のアドレスには <code>main()</code> 関数の呼び出し元となっている関数 (32 bit Linux では標準 C ライブラリ <code>glibc</code> によるスタートアップ処理の一部である <code>__libc_start_main()</code> 関数) のベースポインタの値、<code>$ebp + 0x4</code> のアドレスには <code>main()</code> 関数終了後に <code>ret</code> 命令によって戻るジャンプ先 (<code>__libc_start_main()</code> の <code>main()</code> 関数実行後の処理のアドレス) が保存されている.</p>
+
+<p>元々の <code>argc</code> や <code>argv</code> の値が <code>$ebp + 0x8</code> や <code>$ebp + 0xc</code> のようにベースポインタ EBP を介して取得されていることから、<code>argc</code> や <code>argv</code> の値は <code>main()</code> 実行前のスタートアップ処理 <code>__libc_start_main()</code> 関数によって引数として渡されてきているということがわかる.</p>
+
+<p>まずは EBP レジスタの値を調べてみる.</p>
+
+<pre><code>(gdb) print $ebp
+$36 = (void *) 0xbffff548
+
+(gdb) print ($ebp + 0x4)
+$37 = (void *) 0xbffff54c
+
+(gdb) print ($ebp + 0x8)
+$38 = (void *) 0xbffff550
+
+(gdb) print ($ebp + 0xc)
+$39 = (void *) 0xbffff554
+</code></pre>
+
+<p>次に、これらのアドレス中に含まれている値を確認してみる. これらはそれぞれ 4 byte のアドレスあるいは整数値となっている.</p>
+
+<pre><code>(gdb) x /aw $ebp
+0xbffff548:     0xbffff5c8
+
+(gdb) x /aw ($ebp + 0x4)
+0xbffff54c:     0x8048478 &lt;__libc_start_main+392&gt;
+
+(gdb) x /xw ($ebp + 0x8)
+0xbffff550:     0x00000003
+
+(gdb) x /aw ($ebp + 0xc)
+0xbffff554:     0xbffff5f4
+</code></pre>
+
+<p>これらの結果から、<code>main()</code> 関数の呼び出し元のベースポインタの値は <code>0xbffff5c8</code>、<code>main()</code> 関数の <code>ret</code> 命令によるジャンプ先は <code>0x08048478</code>、<code>argc</code> の値は 3、<code>argv</code> の値は <code>0xbffff5f4</code> となっていることが分かった.
+<code>argv</code> の値は確かに <code>argv[0]</code> の値が格納されているアドレスと一致している.</p>
+
+<pre><code>(gdb) x /aw ($ebp + 0xc)
+0xbffff554:     0xbffff5f4
+
+(gdb) x /aw *($ebp + 0xc)
+Attempt to dereference a generic pointer.
+
+(gdb) x /aw *((char **) ($ebp + 0xc))
+0xbffff5f4:     0xbffff732
+
+(gdb) x /aw 0xbffff5f4
+0xbffff5f4:     0xbffff732
+
+(gdb) x /sb 0xbffff732
+0xbffff732:      &quot;/home/user/hello/hello&quot;
+</code></pre>
+
+<p>単に <code>*($ebp + 0xc)</code> としてデリファレンスしようとするとポインタの大きさが分からないためにうまくデリファレンスできないため、<code>char **</code> 型に一旦キャストしてからデリファレンスを行う必要がある場合がある.</p>
+
+<p>さらに、今度はスタックポインタ ESP との関連を見てみる.
+今、<code>printf()</code> 関数への <code>call</code> 命令実行の直前でブレークしているとすると、アセンブリコードの処理内容から、<code>$esp</code> のアドレスには <code>printf()</code> 関数への第一引数であるフォーマット文字列、<code>$esp + 0x4</code> には <code>argc</code> の値、<code>$esp + 0x8</code> には最初のコマンドライン引数文字列の先頭アドレス <code>argv[0]</code> が入っているはずである.</p>
+
+<p>確認してみる.
+まず、現在のスタックポインタの先頭を確認する.</p>
+
+<pre><code>(gdb) print $esp
+$40 = (void *) 0xbffff530
+</code></pre>
+
+<p>続けて、スタック中の値を 4 byte ずつ連続して表示してみる.</p>
+
+<pre><code>(gdb) x /16xw $esp
+0xbffff530:     0x080b360c      0x00000003      0xbffff732      0x00000000
+0xbffff540:     0x08048be0      0x08048c20      0xbffff5c8      0x08048478
+0xbffff550:     0x00000003      0xbffff5f4      0xbffff604      0x00000000
+0xbffff560:     0x00000000      0x00000000      0x00000000      0x00000000
+</code></pre>
+
+<p>すると、スタックの先頭 <code>0xbffff530</code> から 4 byte には <code>0x080b360c</code> という値が入っている.
+これは <code>printf()</code> 関数への第一引数であるフォーマット文字列の先頭アドレスとなっているはずである.</p>
+
+<pre><code>(gdb) x /sb 0x080b360c
+0x80b360c &lt;__dso_handle+4&gt;:      &quot;Hello World! %d %s\n&quot;
+</code></pre>
+
+<p>また、<code>0xbffff534</code> と <code>0xbffff538</code> には <code>argc</code> と <code>argv[0]</code> の値が入っていることがわかる.</p>
+
+<p>まとめてみると、<code>printf()</code> 関数実行の直前のメモリの状態は以下のようになっていることとなる.</p>
+
+<pre><code>         Addr.       Addr.              Addr.        Addr.       Addr.       Addr.
+         0xbffff732  0xbffff734         0xbffff740   0xbffff748  0xbffff749  0xbffff74d
+              |       |                   |           |            |           |
+              |   +---+                   |           +----+ +-----+  +--------+
+              |   |                       |                | |        |
+              v   v                       v                v v        v
+             +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+--+-+-+-+--+-+-+-+--+
+       +----&gt;|/|h|o|m|e|/|u|s|e|r|/|h|e|l|l|o|/|h|e|l|l|o|\0|a|b|c|\0|d|e|f|\0|
+       |     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+--+-+-+-+--+-+-+-+--+
+       |      ^ ^   ^                                        ^        ^
+       |      | |   |                                        |        |
+       |      | |   +------------+                           |        |
+       |      | +-------+        |                           |        |
+       |      |         |        |                           |        |
+       |      |     Addr.       Addr.                        |        |
+       |      |     0xbffff733  0xbffff735                   |        |
+       |      |                                              |        |
+       |      |              +-------------------------------+        |
+       |      |              |                                        |
+       |      +-+            |            +---------------------------+
+       |        |            |            |
+       |  +-----|------+-----|------+-----|------+
+       |  |            |            |            |
+    +----&gt;| 0xbffff732 | 0xbffff749 | 0xbffff74d |
+    |  |  |            |            |            |
+    |  |  +------------+------------+------------+
+    |  |      ^            ^            ^
+    |  |      |            |            |
+    |  |    Addr.        Addr.        Addr.
+    |  |    0xbffff5f4   0xbffff5f8   0xbffff5fc
+    |  |
+    |  +---------------------------------------+ argv[0]
+    |                                          |
+    +------------------------------------------|-+ argv
+                                               | |
+                    Stack                      | |
+                    +---------------------+    | |
+Addr. 0xbffff530 --&gt;| (arg1 for printf()) | &lt;------- ESP
+                    | 0x080b360c         ----+ | |
+                    +---------------------+  | | |
+Addr. 0xbffff534 --&gt;| argc                |  | | |    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+--+
+                    | (arg2 for printf()) |  +------&gt; |H|e|l|l|o| |W|o|r|l|d|!| |%|d| |%|s|\|n|\0|
+                    | 0x00000003          |    | |    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+--+
+                    +---------------------+    | |     ^
+Addr. 0xbffff538 --&gt;| argv[0]             |    | |     |
+                    | (arg3 for printf()) |    | |     +------- Addr.
+                    | 0xbffff732         ------+ |              0x080b360c
+                    +---------------------+      |
+Addr. 0xbffff53c --&gt;| 0x00000000          |      |
+                    +---------------------+      |
+Addr. 0xbffff540 --&gt;| 0x08048be0          |      |
+                    +---------------------+      |
+Addr. 0xbffff544 --&gt;| 0x08048c20          |      |
+                    +---------------------+      |
+Addr. 0xbffff548 --&gt;| base ptr value of   |      |
+                    | caller of main()    |      |
+                    | 0xbffff5c8          | &lt;------- EBP
+                    +---------------------+      |
+Addr. 0xbffff54c --&gt;| dest adder of `ret` |      |
+                    | inst of main()      |      |
+                    | 0x08048478          |      |
+                    +---------------------+      |
+Addr. 0xbffff550 --&gt;| argc                |      |
+                    | (arg1 for main())   |      |
+                    | 0x00000003          |      |
+                    +---------------------+      |
+Addr. 0xbffff554 --&gt;| argv                |      |
+                    | (arg2 for main())   |      |
+                    | 0xbffff5f4         --------+
+                    +---------------------+
+Addr. 0xbffff558 --&gt;| envp                |
+                    | (arg3 for main())   |
+                    | 0xbffff604          |
+                    +---------------------+
+Addr. 0xbffff55c --&gt;| 0x00000000          |
+                    +---------------------+
+Addr. 0xbffff560 --&gt;| 0x00000000          |
+                    +---------------------+
+Addr. 0xbffff564 --&gt;| 0x00000000          |
+                    +---------------------+
+Addr. 0xbffff568 --&gt;| 0x00000000          |
+                    +---------------------+
+Addr. 0xbffff56c --&gt;| 0x00000000          |
+                    +---------------------+
+</code></pre>
+
+<p>スタック上の <code>0xbffff53c</code> から <code>0xbffff547</code> までの 12 byte は特に使われておらず、この中に格納されている値は単に何の意味もなさないゴミデータが残っているだけと考えられる.</p>
 
 <h1 id="gdbserver-でデバッガ操作とプログラムの出力を分ける">gdbserver でデバッガ操作とプログラムの出力を分ける</h1>
 
@@ -886,13 +1742,33 @@ Child exited with status 0
 
 <p>もしも <code>gdb</code> を先に <code>quit</code> してしまった場合には、再度 <code>gdb</code> を起動して <code>target extended-remote</code> で <code>gdbserver</code> に接続してから <code>monitor exit</code> をすればよい.</p>
 
+<h1 id="ヘルプ">ヘルプ</h1>
+
+<p>gdb の各コマンドのヘルプを見るには <code>help</code> コマンドを使用する.
+例えば <code>help info</code> と入力すれば、<code>info breakpoints</code> や <code>info registers</code> などの <code>info</code> のサブコマンド一覧を確認できる.</p>
+
+<pre><code>(gdb) help &lt;コマンド名&gt;
+</code></pre>
+
 <h1 id="参考文献">参考文献</h1>
 
 <ul>
-<li><a href="https://www.amazon.co.jp/dp/4798044784">ハロー“Hello,World&rdquo;OSと標準ライブラリのシゴトとしくみ</a>
+<li><p><a href="https://www.amazon.co.jp/dp/4798044784">ハロー“Hello,World&rdquo;OSと標準ライブラリのシゴトとしくみ</a></p>
 
 <ul>
 <li><code>printf()</code> の中の処理を gdb で追いかけていったりして楽しいよ.</li>
+</ul></li>
+
+<li><p><a href="https://www.amazon.co.jp/dp/4798155039">低レベルプログラミング</a></p>
+
+<ul>
+<li>x64 アセンブリについても説明してくれている貴重な本.</li>
+</ul></li>
+
+<li><p><a href="https://lldb.llvm.org/lldb-gdb.html">GDB TO LLDB COMMAND MAP</a></p>
+
+<ul>
+<li>LLDB 使ったこと無いけど、macOS だとやっぱり LLDB を使うほうがいいんですかね.</li>
 </ul></li>
 </ul>
 
