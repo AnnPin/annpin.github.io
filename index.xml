@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>あんぜんぴんの落書き帳</title>
-    <link>https://annpin.github.io/</link>
+    <link>https://annpin.com/</link>
     <description>Recent content on あんぜんぴんの落書き帳</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>ja</language>
     <copyright>© 2018. All rights reserved.</copyright>
     <lastBuildDate>Tue, 17 Jul 2018 19:12:33 +0900</lastBuildDate>
     
-	<atom:link href="https://annpin.github.io/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://annpin.com/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Linux カーネル v2.6.39 と v4.18-rc5 のコードをチョット比べてみる</title>
-      <link>https://annpin.github.io/posts/18/07/17/linux-kernel-code-reading/</link>
+      <link>https://annpin.com/posts/18/07/17/linux-kernel-code-reading/</link>
       <pubDate>Tue, 17 Jul 2018 19:12:33 +0900</pubDate>
       
-      <guid>https://annpin.github.io/posts/18/07/17/linux-kernel-code-reading/</guid>
+      <guid>https://annpin.com/posts/18/07/17/linux-kernel-code-reading/</guid>
       <description>2.6 系の Linux カーネルのコードを解説してくれている本を読んでみたら、 最新の Linux カーネルの実装がどの程度変化しているのかちょっと調べてみたくなってしまった.
 なので今回は int $0x80 や sysenter が呼ばれた際のシステムコールハンドラの動きをちょっとだけ比べてみた.
 ちょっと見比べてみたときのメモの単なる垂れ流し. オチなし.
@@ -29,10 +29,10 @@ v2.6.39 Linux カーネル 2.6.39 では arch/x86/kernel/entry_32.S#498 およ�
     
     <item>
       <title>バイナリ解析についてのメモ</title>
-      <link>https://annpin.github.io/posts/18/07/16/binary-analysis-memo/</link>
+      <link>https://annpin.com/posts/18/07/16/binary-analysis-memo/</link>
       <pubDate>Mon, 16 Jul 2018 12:30:10 +0900</pubDate>
       
-      <guid>https://annpin.github.io/posts/18/07/16/binary-analysis-memo/</guid>
+      <guid>https://annpin.com/posts/18/07/16/binary-analysis-memo/</guid>
       <description>バイナリ解析ツールの使い方とか雑多なことについての個人的なメモ.
 不定期更新.
 ツールについて objdump 実行ファイルの逆アセンブルができる汎用ツール. コンパイル後に各関数がどんな機械語に落ちているのかを調べるのに便利.
@@ -43,10 +43,10 @@ readelf readelf コマンドは ELF 形式の実行ファイルの解析がで�
     
     <item>
       <title>gdb のコマンドメモ</title>
-      <link>https://annpin.github.io/posts/18/07/16/gdb-commands/</link>
+      <link>https://annpin.com/posts/18/07/16/gdb-commands/</link>
       <pubDate>Mon, 16 Jul 2018 07:47:21 +0900</pubDate>
       
-      <guid>https://annpin.github.io/posts/18/07/16/gdb-commands/</guid>
+      <guid>https://annpin.com/posts/18/07/16/gdb-commands/</guid>
       <description>gdb (GNU Debugger) のコマンド、わりと毎回調べ直してる気がするのでとりあえずまとめとく. シェル内での操作は先頭に $、gdb 内での操作は先頭に (gdb) と付けているが、これらは実際に入力する必要はないので注意. なお、基本的にすべて 32 bit の Linux 環境での実行結果となる.
 準備 C プログラムを gdb でデバッグしたい場合、gcc などのコンパイラにデバッグオプションを渡してからそのファイルをコンパイルする. hello.c を gcc でコンパイルするなら、以下のようにして -g フラグを渡してコンパイルする.
 $ gcc -o hello hello.c -g -Wall  -Wall フラグは警告を可能な限り多く表示するフラグ. とりあえず有効にしておいたほうが無難らしい.
@@ -59,10 +59,10 @@ $ nasm -o hello.</description>
     
     <item>
       <title>C/C&#43;&#43; の const 修飾子の位置で混乱しないために</title>
-      <link>https://annpin.github.io/posts/18/03/27/c-cpp-const/</link>
+      <link>https://annpin.com/posts/18/03/27/c-cpp-const/</link>
       <pubDate>Tue, 27 Mar 2018 18:16:17 +0900</pubDate>
       
-      <guid>https://annpin.github.io/posts/18/03/27/c-cpp-const/</guid>
+      <guid>https://annpin.com/posts/18/03/27/c-cpp-const/</guid>
       <description>C や C++ の const 修飾子は変数や引数に指定することで &amp;ldquo;値が不変である&amp;rdquo; ということを示す. 極めて単純である.
 これは書き方にいくつかのバリエーションが存在するが、ポインタ変数に対して指定する場合には初見だと非常に混乱する記述となる. この記事ではこの const 修飾子を混乱せずに使うための考え方についてまとめる.
 変数に対して const 指定する場合 int a = 10; のように宣言された変数を const 指定する場合には、以下のいずれかの書き方がある.
@@ -73,10 +73,10 @@ const int a = 10; // 変数 a の値は書き換えできなくなる. int const
     
     <item>
       <title>macOS Sierra で非 LLVM な gcc をビルドし、他のプロセッサ向けのクロスコンパイラ gcc をビルドする</title>
-      <link>https://annpin.github.io/posts/18/03/07/cross-compiler/</link>
+      <link>https://annpin.com/posts/18/03/07/cross-compiler/</link>
       <pubDate>Wed, 07 Mar 2018 10:19:24 +0900</pubDate>
       
-      <guid>https://annpin.github.io/posts/18/03/07/cross-compiler/</guid>
+      <guid>https://annpin.com/posts/18/03/07/cross-compiler/</guid>
       <description>まぁタイトルの通りなのだけれども、macOS で LLVM じゃない普通の gcc をビルドした後で他のプロセッサ向けのクロスコンパイラ gcc をビルドする方法についてメモしておく. 今回は i386 の Linux 向けのクロスコンパイラをビルドすることにする.
 まずは作業用のディレクトリを作成する. 今回はホームディレクトリ中に cross というディレクトリを作り、そこで作業することにした.
 $ mkdir ~/cross $ cd ~/cross  さて、最初からいきなりクロスコンパイラをビルドできるわけではない. macOS 標準の gcc は実体は clang であるが、クロスコンパイラのビルドにはネイティブの gcc が必要となるためまずはホスト環境のためのネイティブ gcc を用意する必要がある.
@@ -87,10 +87,10 @@ $ mkdir N-gcc-7.3.0 $ cd N-gcc-7.3.0  はじめに、GNU の公式 から必要�
     
     <item>
       <title>macOS Sierra 環境で 自作エミュレータで学ぶ x86 アーキテクチャを読み進めるための環境構築をしたかった</title>
-      <link>https://annpin.github.io/posts/18/03/07/x86-emulator-book-on-macos/</link>
+      <link>https://annpin.com/posts/18/03/07/x86-emulator-book-on-macos/</link>
       <pubDate>Wed, 07 Mar 2018 10:19:10 +0900</pubDate>
       
-      <guid>https://annpin.github.io/posts/18/03/07/x86-emulator-book-on-macos/</guid>
+      <guid>https://annpin.com/posts/18/03/07/x86-emulator-book-on-macos/</guid>
       <description>ということで 前回の記事 で触れたように、macOS 上で 自作エミュレータで学ぶ x86 アーキテクチャ を読み進めていく際の開発環境を作ろうとした際の奮闘記を置いておく.
 この本は x86 の CPU エミュレータを自作することで、普段使っている Intel CPU の基本的な振る舞いについてを学習できる本だ. とても面白い. しかし、この本は基本的に Windows 環境でサンプルを動作させることしか前提としておらず、macOS では動作が保証されていない. エミュレータ自体は C 言語で開発していくため、別に C 言語が使える環境ならばどの OS 上でも動作させることができるだろう. しかし、問題となるのは エミュレータに読み込ませるためのテストプログラムが Windows 以外の環境で用意できるか である. エミュレータを作る立場では、そもそもテストプログラムが意図した機械語列でなければ本に沿って作業を進めていくことができない. したがって、C 言語で書かれたテストプログラムを意図した通りの機械語列に変換させる必要がある. 通常、C 言語のプログラムがどのような機械語に変換されるかはコンパイラ任せであるため、意図したとおりの機械語列を得ようとするならば、全く同一の環境を用意して作業するのが当然望ましい だろう. (同じ OS、同じバージョンのコンパイラ)
 はじめに弁明しておくと僕は前回の記事で述べた通り、結局 VM 上の Windows でテストプログラムをコンパイルし、生成されたバイナリを macOS 上に移動させることで本書を読み進めていった. したがって、以下の記事で説明している内容は たぶん参考にならない. というのも、やはり C コンパイラは macOS 環境下で意図した機械語列を吐いてくれなかったためである&amp;hellip;
@@ -100,10 +100,10 @@ $ mkdir N-gcc-7.3.0 $ cd N-gcc-7.3.0  はじめに、GNU の公式 から必要�
     
     <item>
       <title>低レイヤーのはじめの一歩</title>
-      <link>https://annpin.github.io/posts/18/03/06/hello-low-layer-programming/</link>
+      <link>https://annpin.com/posts/18/03/06/hello-low-layer-programming/</link>
       <pubDate>Tue, 06 Mar 2018 20:18:01 +0900</pubDate>
       
-      <guid>https://annpin.github.io/posts/18/03/06/hello-low-layer-programming/</guid>
+      <guid>https://annpin.com/posts/18/03/06/hello-low-layer-programming/</guid>
       <description>今年は年始辺りから低レイヤー周りの勉強を始めている.
 はじめは Z80 アセンブリを macOS 上のエミュレータで動作させるところからスタートした. この動画 を参考に、z80pack に 付属している Z80 アセンブラ z80asm とエミュレータ z80sim を使って はじめて読むマシン語 の サンプルプログラムを自分で動かしてみたりしていた. ただ、DB 命令を使うサンプルでは z80asm が DB を疑似命令として認識しないようであったため、 一部 z80asm の代わりに zasm を使った.
 z80asm と z80sim は組み合わせて使う分にはとても快適なのだが、生成/実行される機械語プログラムの先頭にどうも 0xFF 0xYY 0xXX というフォーマットの 3 バイトのヘッダを付与することを前提としているようだ. この 3 バイトのうち、0xYY と 0xXX はアセンブリコード中で ORG 0xXXYY と指定したエントリポイントのアドレスがそのまま挿入されるらしく、zasm で生成した機械語プログラムを z80sim で正しく読み込むためにはこの 3 バイトのヘッダ情報を自分で付与してやる必要があった.
@@ -112,19 +112,19 @@ z80asm と z80sim は組み合わせて使う分にはとても快適なのだ�
     
     <item>
       <title>About</title>
-      <link>https://annpin.github.io/about/</link>
+      <link>https://annpin.com/about/</link>
       <pubDate>Tue, 06 Mar 2018 19:05:37 +0900</pubDate>
       
-      <guid>https://annpin.github.io/about/</guid>
+      <guid>https://annpin.com/about/</guid>
       <description> 自己紹介  Name: あんぜんぴん (AnnPin) Qiita: https://qiita.com/AnnPin GitHub: https://github.com/AnnPin Twitter: https://twitter.com/Xx_ann_pin_xX 読書メーター: https://bookmeter.com/users/886207 一言: へっぽこ学生です.  </description>
     </item>
     
     <item>
       <title>ブログを始めてみる (N 回目)</title>
-      <link>https://annpin.github.io/posts/18/03/06/hello/</link>
+      <link>https://annpin.com/posts/18/03/06/hello/</link>
       <pubDate>Tue, 06 Mar 2018 14:22:04 +0900</pubDate>
       
-      <guid>https://annpin.github.io/posts/18/03/06/hello/</guid>
+      <guid>https://annpin.com/posts/18/03/06/hello/</guid>
       <description>ブログを始めてみることにする&amp;hellip; と書くのは何度目だろうか&amp;hellip; ブログっていつも長続きしないで放置するんだよなぁ.
 主に書きたくなるような記事はプログラミング技術に関することぐらいしかないから Qiita に上げるだけでいいかと思っていたのだが、 Qiita に上げるべきか悩むような記事をもっと気軽に書けるようにするには自分でブログを持ったほうが楽なのではと考え直した.
 まぁ思い出した頃に覚書的にちょっと書く、みたいな使い方になるだろう.
