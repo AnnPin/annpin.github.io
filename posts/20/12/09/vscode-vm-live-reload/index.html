@@ -3,8 +3,8 @@
 <head>
   
   <meta charset="utf-8">
-  <title>あんぜんぴんの落書き帳</title>
-  <meta name="description" content="あんぜんぴんの落書き帳">
+  <title>VSCode で編集すれば仮想マシン中で動作する Web サーバでも Live Reload できるよという話</title>
+  <meta name="description" content="VSCode で編集すれば仮想マシン中で動作する Web サーバでも Live Reload できるよという話">
   <meta name="author" content="AnnPin">
   
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -414,8 +414,6 @@ Darcula color scheme from the JetBrains family of IDEs
 
   
   
-  <link href="https://annpin.com/index.xml" rel="alternate" type="application/rss+xml" title="あんぜんぴんの落書き帳 Feed" />
-  
 
   <meta name="generator" content="Hugo 0.37" />
 
@@ -460,225 +458,70 @@ Darcula color scheme from the JetBrains family of IDEs
 
 <div class="pure-g">
   <div class="pure-u-1-24 pure-u-md-1-6"></div>
-	<div class="pure-u-11-12 pure-u-md-2-3">
-	<div class="post-content">
-	
-	  <p class="posts-name">Recent posts:</p>
+  <div class="pure-u-11-12 pure-u-md-2-3">
+    <div class="post">
+      <p class="footnote">
+      
+      <time class="">2020/12/09 04:00</time>
+      
 
-	  <ul class="posts">
-		
-		
-		
-		<li>
-		  
-		  <a class="post-list" href="https://annpin.com/posts/20/12/09/vscode-vm-live-reload/">VSCode で編集すれば仮想マシン中で動作する Web サーバでも Live Reload できるよという話</a>
+      
+      
+      
 
-		  <p class="footnote">
-			
-			<time datetime="12-09-2020T04:00:55&#43;09:00">2020/12/09 04:00</time>
-			
+      
 
-			
+      
+      </p>
 
-			
+      <div class="post-title">
+        <h1>VSCode で編集すれば仮想マシン中で動作する Web サーバでも Live Reload できるよという話</h1>
+      </div>
 
-			
+      <div class="post-content">
+        <p>Vagrant を使うと VirtualBox で VM を立ち上げてホスト OS との間で共有フォルダの設定をするのも簡単でいいですよね.
+ただ、ホストから共有フォルダ中のファイルを編集しても、VM 中で動いている Web サーバ (<code>webpack-dev-server</code> など) はファイルの更新を認識してくれなくて Live Reload できないのは難点だったりします.</p>
 
-			
+<p><strong>でも、VSCode を使っているなら実は割と簡単に VSCode 上での編集を Live Reload で反映できます.</strong></p>
 
-		  </p>
-		</li>
-		
-		
-		
-		<li>
-		  
-		  <a class="post-list" href="https://annpin.com/posts/18/07/17/linux-kernel-code-reading/">Linux カーネル v2.6.39 と v4.18-rc5 のコードをチョット比べてみる</a>
+<p>VSCode を開き、<code>Extensions</code> から <code>Remote Development</code> という拡張をインストールしてください.
+この拡張は VSCode から SSH でサーバに接続し、そのサーバ上のファイルを VSCode 上で編集できるようにしてくれるという拡張です.
+この拡張がインストールされると、VSCode のウィンドウの一番左下 (歯車マークの <code>Manage</code> の下) に <code>≶</code> というアイコンが表示されるようになります.</p>
 
-		  <p class="footnote">
-			
-			Created: <time datetime="07-17-2018T19:12:33&#43;09:00">2018/07/17 07:12</time><br>
-			Last Update: <time datetime="07-17-2018T19:12:33&#43;09:00">2018/07/18 08:31</time>
-			
+<p>あとは、VSCode から VM に対して SSH で接続するための鍵情報が用意できれば OK です.
+Vagrant を使っている場合、シェル上で以下のようにして鍵情報を用意することができます.</p>
 
-			
+<pre><code class="language-bash">$ vagrant ssh-config --host &quot;Vagrant の VM 名&quot; &gt;&gt; ~/.ssh/config
+</code></pre>
 
-			
+<p>これにより、以下のような内容の SSH の鍵情報が <code>~/.ssh/config</code> へと追記されることになります.</p>
 
-			
+<pre><code>Host Vagrant の VM名
+  HostName 127.0.0.1
+  User vagrant
+  Port 2200
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  IdentityFile /path/to/vagrant/folder/.vagrant/machines/default/virtualbox/private_key
+  IdentitiesOnly yes
+  LogLevel FATAL
+</code></pre>
 
-			
+<p>VSCode に戻って <code>≶</code> のアイコンをクリックしてみましょう.
+コマンドパレットが現れるので、その中から <code>Remote-SSH: Connect to Host...</code> をクリックしましょう.
+すると、先程追記した <code>~/.ssh/config</code> の内容が自動的に読み取られ、コマンドパレットの一覧中に <code>&quot;Vagrant の VM 名&quot;</code> が表示されると思います.
+これをクリックすると新たに VSCode のウィンドウが現れます.</p>
 
-		  </p>
-		</li>
-		
-		
-		
-		<li>
-		  
-		  <a class="post-list" href="https://annpin.com/posts/18/07/16/binary-analysis-memo/">バイナリ解析についてのメモ</a>
+<p>この新たに表示された VSCode ウィンドウ上では選択した VM 中に既に SSH で接続されている状態となっており、<code>Open</code> や <code>Open Folder</code> をクリックするとホストのディレクトリツリーではなく VM のディレクトリツリーが表示されることになります.</p>
 
-		  <p class="footnote">
-			
-			Created: <time datetime="07-16-2018T12:30:10&#43;09:00">2018/07/16 12:30</time><br>
-			Last Update: <time datetime="07-16-2018T12:30:10&#43;09:00">2018/07/30 04:45</time>
-			
+<p>あとはここから編集したいプロジェクトのディレクトリを開き、普段 VSCode を使う際と全く同じように編集して上書きすれば、VM 中で動作するサーバによってファイルの更新が検出されて Live Reload がうまく動くはずです.</p>
 
-			
+<p>VSCode 便利ですね.</p>
 
-			
-
-			
-
-			
-
-		  </p>
-		</li>
-		
-		
-		
-		<li>
-		  
-		  <a class="post-list" href="https://annpin.com/posts/18/07/16/gdb-commands/">gdb のコマンドメモ</a>
-
-		  <p class="footnote">
-			
-			Created: <time datetime="07-16-2018T07:47:21&#43;09:00">2018/07/16 07:47</time><br>
-			Last Update: <time datetime="07-16-2018T07:47:21&#43;09:00">2018/07/30 05:37</time>
-			
-
-			
-
-			
-
-			
-
-			
-
-		  </p>
-		</li>
-		
-		
-		
-		<li>
-		  
-		  <a class="post-list" href="https://annpin.com/posts/18/03/27/c-cpp-const/">C/C&#43;&#43; の const 修飾子の位置で混乱しないために</a>
-
-		  <p class="footnote">
-			
-			Created: <time datetime="03-27-2018T18:16:17&#43;09:00">2018/03/27 06:16</time><br>
-			Last Update: <time datetime="03-27-2018T18:16:17&#43;09:00">2018/07/16 11:23</time>
-			
-
-			
-
-			
-
-			
-
-			
-
-		  </p>
-		</li>
-		
-		
-		
-		<li>
-		  
-		  <a class="post-list" href="https://annpin.com/posts/18/03/07/cross-compiler/">macOS Sierra で非 LLVM な gcc をビルドし、他のプロセッサ向けのクロスコンパイラ gcc をビルドする</a>
-
-		  <p class="footnote">
-			
-			Created: <time datetime="03-07-2018T10:19:24&#43;09:00">2018/03/07 10:19</time><br>
-			Last Update: <time datetime="03-07-2018T10:19:24&#43;09:00">2018/07/16 11:23</time>
-			
-
-			
-
-			
-
-			
-
-			
-
-		  </p>
-		</li>
-		
-		
-		
-		<li>
-		  
-		  <a class="post-list" href="https://annpin.com/posts/18/03/07/x86-emulator-book-on-macos/">macOS Sierra 環境で 自作エミュレータで学ぶ x86 アーキテクチャを読み進めるための環境構築をしたかった</a>
-
-		  <p class="footnote">
-			
-			Created: <time datetime="03-07-2018T10:19:10&#43;09:00">2018/03/07 10:19</time><br>
-			Last Update: <time datetime="03-07-2018T10:19:10&#43;09:00">2018/07/16 11:23</time>
-			
-
-			
-
-			
-
-			
-
-			
-
-		  </p>
-		</li>
-		
-		
-		
-		<li>
-		  
-		  <a class="post-list" href="https://annpin.com/posts/18/03/06/hello-low-layer-programming/">低レイヤーのはじめの一歩</a>
-
-		  <p class="footnote">
-			
-			Created: <time datetime="03-06-2018T20:18:01&#43;09:00">2018/03/06 08:18</time><br>
-			Last Update: <time datetime="03-06-2018T20:18:01&#43;09:00">2018/07/16 11:23</time>
-			
-
-			
-
-			
-
-			
-
-			
-
-		  </p>
-		</li>
-		
-		
-		
-		
-		
-		<li>
-		  
-		  <a class="post-list" href="https://annpin.com/posts/18/03/06/hello/">ブログを始めてみる (N 回目)</a>
-
-		  <p class="footnote">
-			
-			Created: <time datetime="03-06-2018T14:22:04&#43;09:00">2018/03/06 02:22</time><br>
-			Last Update: <time datetime="03-06-2018T14:22:04&#43;09:00">2018/07/16 11:23</time>
-			
-
-			
-
-			
-
-			
-
-			
-
-		  </p>
-		</li>
-		
-		
-	  </ul>
-	</div>
-	</div>
+      </div>
+    </div>
+  </div>
   <div class="pure-u-1-24 pure-u-md-1-6"></div>
 </div>
 
@@ -710,7 +553,7 @@ Darcula color scheme from the JetBrains family of IDEs
 
         </ul>
         <a href="#" class="pure-menu-link pull-right" id="gototop-btn">↑↑</a>
-        <a href="https://annpin.com/index.xml" class="pure-menu-link pull-right">RSS</a>
+        <a href="" class="pure-menu-link pull-right">RSS</a>
       </div>
       
       <p id="foot-copyright">© 2018. All rights reserved.</p>

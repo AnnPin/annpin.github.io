@@ -7,10 +7,23 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>ja</language>
     <copyright>© 2018. All rights reserved.</copyright>
-    <lastBuildDate>Tue, 17 Jul 2018 19:12:33 +0900</lastBuildDate>
+    <lastBuildDate>Wed, 09 Dec 2020 04:00:55 +0900</lastBuildDate>
     
 	<atom:link href="https://annpin.com/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>VSCode で編集すれば仮想マシン中で動作する Web サーバでも Live Reload できるよという話</title>
+      <link>https://annpin.com/posts/20/12/09/vscode-vm-live-reload/</link>
+      <pubDate>Wed, 09 Dec 2020 04:00:55 +0900</pubDate>
+      
+      <guid>https://annpin.com/posts/20/12/09/vscode-vm-live-reload/</guid>
+      <description>Vagrant を使うと VirtualBox で VM を立ち上げてホスト OS との間で共有フォルダの設定をするのも簡単でいいですよね. ただ、ホストから共有フォルダ中のファイルを編集しても、VM 中で動いている Web サーバ (webpack-dev-server など) はファイルの更新を認識してくれなくて Live Reload できないのは難点だったりします.
+でも、VSCode を使っているなら実は割と簡単に VSCode 上での編集を Live Reload で反映できます.
+VSCode を開き、Extensions から Remote Development という拡張をインストールしてください. この拡張は VSCode から SSH でサーバに接続し、そのサーバ上のファイルを VSCode 上で編集できるようにしてくれるという拡張です. この拡張がインストールされると、VSCode のウィンドウの一番左下 (歯車マークの Manage の下) に ≶ というアイコンが表示されるようになります.
+あとは、VSCode から VM に対して SSH で接続するための鍵情報が用意できれば OK です. Vagrant を使っている場合、シェル上で以下のようにして鍵情報を用意することができます.
+$ vagrant ssh-config --host &amp;quot;Vagrant の VM 名&amp;quot; &amp;gt;&amp;gt; ~/.ssh/config  これにより、以下のような内容の SSH の鍵情報が ~/.</description>
+    </item>
     
     <item>
       <title>Linux カーネル v2.6.39 と v4.18-rc5 のコードをチョット比べてみる</title>
